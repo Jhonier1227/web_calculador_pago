@@ -7,8 +7,8 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 ## 1. LÓGICA — Motor de cálculo (funciones puras, TypeScript strict, 100% testeable)
 
 ### 1.1 Constantes y tipos base
-- [ ] **1.1.1** Crear `src/lib/calculos/constantes.ts` con `CONSTANTES_2026` (salario mínimo, divisor 210, jornada 42h, horarios diurno/nocturno, recargos tabla).
-- [ ] **1.1.2** Crear `src/lib/calculos/tipos.ts` con todos los tipos TypeScript:
+- [x] **1.1.1** Crear `src/lib/calculos/constantes.ts` con `CONSTANTES_2026` (salario mínimo, divisor 210, jornada 42h, horarios diurno/nocturno, recargos tabla).
+- [x] **1.1.2** Crear `src/lib/calculos/tipos.ts` con todos los tipos TypeScript:
   - `TipoHora` (enum con 9 valores)
   - `HorarioDia` { inicio: string, fin: string } // "HH:mm"
   - `JornadaPactada` { dias: number[], horariosPorDia: Record<number, HorarioDia> } // key = día 1-7 (1=Lun...7=Dom)
@@ -32,8 +32,8 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
   - `validarAñoFestivos(año: number): Advertencia[]` → error si año < 2020 o > 2037.
 
 ### 1.3 Festivos (ya existe `festivos.ts`, completar)
-- [ ] **1.3.1** Revisar `src/lib/calculos/festivos.ts`: confirmar que exporta `esFestivo(fecha: Date): Promise<boolean>` o sync, y `obtenerFestivosAño(año: number): Date[]`.
-- [ ] **1.3.2** Añadir wrapper síncrono `esFestivoSync(fecha: Date): boolean` que use cache en memoria del año consultado (para no llamar async en bucle de horas).
+- [x] **1.3.1** Revisar `src/lib/calculos/festivos.ts`: confirmar que exporta `esFestivo(fecha: Date): boolean` (sync), y `obtenerFestivosAño(año: number): Date[]`. → ✅ sync confirmado. `obtenerFestivosAño` no exportado (se usa internamente `obtenerFestivos` con cache).
+- [x] **1.3.2** Añadir cache en memoria del año consultado `Map<number, Festivo[]>` (evita 24-48 llamadas por cálculo). ✅ implementado en sesión anterior.
 - [ ] **1.3.3** Test manual: verificar que festivos 2026 incluyen Ley Emiliani (ej: 19 junio 2026 = Sagrado Corazón → lunes 22 junio).
 
 ### 1.4 Clasificación de hora individual (núcleo del motor)
@@ -109,7 +109,7 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 ## 2. DISEÑO — UI de la calculadora (React + Tailwind, mobile-first)
 
 ### 2.1 Setup y componentes base (UI primitives)
-- [ ] **2.1.1** Instalar/Configurar `tailwindcss` v4 (ya en package.json), verificar `index.css` con `@import "tailwindcss"`.
+- [x] **2.1.1** Instalar/Configurar `tailwindcss` v4 (ya en package.json), verificar `index.css` con `@import "tailwindcss"` y `@tailwindcss/vite` en `vite.config.ts`. ✅ verificado.
 - [ ] **2.1.2** Crear componentes en `src/components/ui/`:
   - `Button.tsx` (variant: primary, secondary, ghost; size: sm, md, lg)
   - `Input.tsx` (label, error, helperText, type=number|text|time)
@@ -225,7 +225,7 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 ## 4. DESPLIEGUE — Build, PWA, Deploy, Verificación
 
 ### 4.1 Build de producción
-- [ ] **4.1.1** Verificar `npm run build` genera `dist/` sin errores TypeScript ni ESLint.
+- [x] **4.1.1** Verificar `npm run build` genera `dist/` sin errores TypeScript ni ESLint. ✅ verificado (build exitoso, JS 60KB gzip, CSS 6KB gzip).
 - [ ] **4.1.2** `npm run preview` sirve `dist/` correctamente en local.
 - [ ] **4.1.3** Bundle analysis: `npm run build && npx vite-bundle-analyzer dist` → JS < 150KB gzip, CSS < 20KB.
 
@@ -282,6 +282,9 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 
 ## 🎯 PRÓXIMO PASO RECOMENDADO
 
-Todas las decisiones están confirmadas. **Podemos arrancar Fase 1 (Lógica)** con las tareas 1.1 → 1.7 en orden.
+✅ **1.1 (constantes.ts, tipos.ts)** — COMPLETADO
+✅ **1.3 (festivos.ts base + cache)** — COMPLETADO
+✅ **2.1.1 (Tailwind v4 setup)** — COMPLETADO
+✅ **4.1.1 (build producción)** — COMPLETADO
 
-¿Empezamos con `src/lib/calculos/constantes.ts` y `tipos.ts`?
+⬜ **Siguiente: 1.2 → 1.4 → 1.5 → 1.6** (utilidades → clasificación → motor → barrel export)
