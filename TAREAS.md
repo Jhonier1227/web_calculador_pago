@@ -20,7 +20,7 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
   - `ResultadoCalculo` { desgloseHoras: HoraCalculada[], resumenPorTipo: ResumenTipo[], totalPagar: number, advertencias: Advertencia[] }
 
 ### 1.2 Utilidades puras
-- [ ] **1.2.1** Crear `src/lib/calculos/utilidades.ts` con:
+- [x] **1.2.1** Crear `src/lib/calculos/utilidades.ts` con:
   - `redondearCOP(n: number): number` → `Math.round`
   - `parseHora(hora: string): { horas: number, minutos: number }` (formato "HH:mm")
   - `horaANumero(horas: number, minutos: number): number` (decimal, ej 19.5 = 19:30)
@@ -34,10 +34,10 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 ### 1.3 Festivos (ya existe `festivos.ts`, completar)
 - [x] **1.3.1** Revisar `src/lib/calculos/festivos.ts`: confirmar que exporta `esFestivo(fecha: Date): boolean` (sync), y `obtenerFestivosAño(año: number): Date[]`. → ✅ sync confirmado. `obtenerFestivosAño` no exportado (se usa internamente `obtenerFestivos` con cache).
 - [x] **1.3.2** Añadir cache en memoria del año consultado `Map<number, Festivo[]>` (evita 24-48 llamadas por cálculo). ✅ implementado en sesión anterior.
-- [ ] **1.3.3** Test manual: verificar que festivos 2026 incluyen Ley Emiliani (ej: 19 junio 2026 = Sagrado Corazón → lunes 22 junio).
+- [x] **1.3.3** Test manual: verificar que festivos 2026 incluyen Ley Emiliani — ✅ Sagrado Corazón 15/06/2026 (lunes), Reyes Magos 12/01/2026 (lunes).
 
 ### 1.4 Clasificación de hora individual (núcleo del motor)
-- [ ] **1.4.1** Crear `src/lib/calculos/clasificacion.ts` con función pura:
+- [x] **1.4.1** Crear `src/lib/calculos/clasificacion.ts` con función pura:
   ```typescript
   function clasificarHora(
     hora: Date,
@@ -47,11 +47,11 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
   ): { tipoHora: TipoHora; recargo: number; esHoraExtra: boolean }
   ```
   Implementar tabla de decisión completa (8 casos) según RF-05.
-- [ ] **1.4.2** Función auxiliar `estaDentroDeJornada(hora: Date, jornada: JornadaPactada): boolean` que maneje cruce medianoche en jornada pactada.
-- [ ] **1.4.3** Función auxiliar `esDiaLaboralHabitual(fecha: Date, jornada: JornadaPactada): boolean`.
+- [x] **1.4.2** Función auxiliar `estaDentroDeJornada(hora: Date, jornada: JornadaPactada): boolean` que maneje cruce medianoche en jornada pactada.
+- [x] **1.4.3** Función auxiliar `esDiaLaboralHabitual(fecha: Date, jornada: JornadaPactada): boolean`.
 
 ### 1.5 Motor principal de cálculo
-- [ ] **1.5.1** Crear `src/lib/calculos/motor.ts` con:
+- [x] **1.5.1** Crear `src/lib/calculos/motor.ts` con:
   ```typescript
   export async function calcularTurno(
     salarioMensual: number,
@@ -78,23 +78,23 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
   8. Retornar `ResultadoCalculo`.
 
 ### 1.6 Barrel export y tipos públicos
-- [ ] **1.6.1** Crear `src/lib/calculos/index.ts` exportando todo lo público.
+- [x] **1.6.1** Crear `src/lib/calculos/index.ts` exportando todo lo público.
 
 ### 1.7 Tests unitarios del motor (Vitest)
-- [ ] **1.7.1** Configurar Vitest + @testing-library/jest-dom en `package.json`.
-- [ ] **1.7.2** Test `constantes.ts`: valores correctos 2026.
-- [ ] **1.7.3** Test `utilidades.ts`: redondeo, parsing horas, generación horas cruce medianoche, validación año festivos, validación franjas solapadas.
-- [ ] **1.7.4** Test `clasificacion.ts`: **8 casos de la tabla** + edge cases (festivo en jornada pactada, noche cruce 19:00/06:00).
-- [ ] **1.7.5** Test `motor.ts` — **casos críticos end-to-end**:
+- [x] **1.7.1** Configurar Vitest + @testing-library/jest-dom en `package.json`.
+- [x] **1.7.2** Test `constantes.ts`: valores correctos 2026 (19 tests).
+- [x] **1.7.3** Test `utilidades.ts`: redondeo, parsing horas, generación horas cruce medianoche, validación año festivos, validación franjas solapadas (35 tests).
+- [x] **1.7.4** Test `clasificacion.ts`: **8 casos de la tabla** + edge cases (festivo en jornada pactada, noche cruce 19:00/06:00, jornada nocturna cruce medianoche) (18 tests).
+- [x] **1.7.5** Test `motor.ts` — **casos críticos end-to-end** (18 tests):
   - Caso 1: Turno ordinario diurno 4h → 4 ORDINARIA_DIURNA.
-  - Caso 2: Recargo nocturno dentro jornada.
-  - Caso 3: Domingo no laboral diurno → RECARGO_DOMINICAL_DIURNO.
+  - Caso 2: Turno fuera jornada con horas nocturnas → EXTRA_DIURNA + EXTRA_NOCTURNA.
+  - Caso 3: Domingo no laboral diurno → EXTRA_DOMINICAL_DIURNA.
   - Caso 4: Domingo EN jornada pactada → ORDINARIA_DIURNA (sin 90%).
   - Caso 5: Festivo Emiliani (lunes) → RECARGO_DOMINICAL_DIURNO.
-  - Caso 6: **Turno cruza medianoche Sáb 23:00 – Dom 03:00** → 1h RECARGO_NOCTURNO (sáb) + 3h RECARGO_DOMINICAL_NOCTURNO (dom).
-  - Caso 7: Horas extra diurnas + nocturnas + límite 2h/día → warning.
+  - Caso 6: **Turno cruza medianoche Sáb 23:00 – Dom 03:00** → 1h EXTRA_NOCTURNA + 3h EXTRA_DOMINICAL_NOCTURNA.
+  - Caso 7: Horas extra + límite 2h/día → warning.
   - Caso 8: Salario < mínimo → warning + cálculo con valor ingresado.
-  - Caso 9: Hora fin = hora inicio → error validación.
+  - Caso 9: Hora fin = hora inicio → error FRANJA_INVALIDA.
   - Caso 10: Jornada semanal 6 días × 8h = 48h → warning.
   - Caso 11: Año festivos fuera rango (2019) → error AÑO_FESTIVOS_FUERA_RANGO (bloquea).
   - Caso 12: Año bisiesto (29 feb 2024) → festivos correctos.
@@ -102,7 +102,7 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
   - Caso 14: Turno partido (múltiples franjas) → suma correcta horas.
   - Caso 15: Franjas solapadas → error FRANJAS_SOLAPADAS.
   - Caso 16: Auxilio transporte → solo suma a total, no afecta valor hora.
-- [ ] **1.7.6** Cobertura objetivo: ≥ 90% en `src/lib/calculos/`.
+- [x] **1.7.6** Cobertura objetivo: ≥ 90% en `src/lib/calculos/` — ✅ **96.79% lines**.
 
 ---
 
@@ -110,62 +110,64 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 
 ### 2.1 Setup y componentes base (UI primitives)
 - [x] **2.1.1** Instalar/Configurar `tailwindcss` v4 (ya en package.json), verificar `index.css` con `@import "tailwindcss"` y `@tailwindcss/vite` en `vite.config.ts`. ✅ verificado.
-- [ ] **2.1.2** Crear componentes en `src/components/ui/`:
-  - `Button.tsx` (variant: primary, secondary, ghost; size: sm, md, lg)
-  - `Input.tsx` (label, error, helperText, type=number|text|time)
-  - `Select.tsx` / `CheckboxGroup.tsx` (para días semana)
-  - `Card.tsx`, `Badge.tsx` (tipos de hora con colores semánticos)
-  - `Table.tsx` / `DataList.tsx` (desglose hora por hora, responsive con scroll-x)
-  - `Alert.tsx` (advertencias: info/warning/error)
-  - `Tabs.tsx` (para separar "Calculadora" / "Cómo funciona" / "Tus derechos")
+- [x] **2.1.2** Crear componentes en `src/components/ui/`:
+  - [x] `Button.tsx` (variant: primary, secondary, ghost; size: sm, md, lg)
+  - [x] `Input.tsx` (label, error, helperText, type=number|text|time)
+   - [x] `Select.tsx` / ~~`CheckboxGroup.tsx`~~ (días semana ya integrado en FormularioJornada)
+   - [x] `Card.tsx`
+   - [x] `Badge.tsx` (tipos de hora con colores semánticos — 9 colores)
+   - [ ] `Table.tsx` / `DataList.tsx`
+   - [x] `Alert.tsx` (advertencias: info/warning/error)
+   - [x] `Tabs.tsx` (para sección educativa)
+- [x] **2.1.3** Crear `src/components/ui/index.ts` — barrel export
 
 ### 2.2 Layout y tema
-- [ ] **2.2.1** `src/components/Layout.tsx`: header (logo + título), main, footer (enlace repo, versión, disclaimer legal).
-- [ ] **2.2.2** Tema claro/oscuro: `useTheme` hook + `localStorage` + `class="dark"` en `<html>`. Tailwind `dark:` variants en componentes.
-- [ ] **2.2.3** Responsive breakpoints: `< 640px` (mobile), `640-1024` (tablet), `>1024` (desktop). Formularios apilados en mobile.
+- [x] **2.2.1** `src/components/Layout.tsx`: header (título + subtítulo), main, footer (disclaimer legal).
+- [x] **2.2.2** Tema claro/oscuro: `useTheme` hook + `localStorage` + `class="dark"` en `<html>`. Tailwind `dark:` variants en componentes.
+- [x] **2.2.3** Responsive breakpoints: `< 640px` (mobile), `640-1024` (tablet), `>1024` (desktop). Formularios apilados en mobile.
 
 ### 2.3 Formulario: Jornada Pactada
-- [ ] **2.3.1** Componente `FormularioJornada.tsx`:
-  - Checkbox group L-D (labels cortos: Lu, Ma, Mi, Ju, Vi, Sá, Do).
-  - **Por cada día seleccionado:** 2 inputs `type="time"`: inicio, fin para ese día (se muestran/ocultan dinámicamente).
-  - Validación en tiempo real: al menos 1 día, hora fin ≠ inicio por día.
-  - Display calculado: "Horas/semana: Y" + warning si Y > 42.
-  - Botón "Guardar jornada" → guarda en estado global / localStorage.
+- [x] **2.3.1** Componente `FormularioJornada.tsx`:
+  - [x] Checkbox group L-D (labels cortos: Lu, Ma, Mi, Ju, Vi, Sá, Do).
+  - [x] **Por cada día seleccionado:** 2 inputs `type="time"`: inicio, fin para ese día (se muestran/ocultan dinámicamente).
+  - [x] Validación en tiempo real: al menos 1 día, hora fin ≠ inicio por día.
+  - [x] Display calculado: "Horas/semana: Y" + warning si Y > 42.
+  - [x] Botón "Guardar jornada" → guarda en estado global / localStorage (via useLocalStorage).
 
 ### 2.4 Formulario: Turno a calcular
-- [ ] **2.4.1** Componente `FormularioTurno.tsx`:
-  - Input `type="date"` (fecha turno, default hoy).
-  - **Múltiples franjas:** Lista de pares hora inicio/fin. Botón "Añadir franja" (máx 4). Botón "Eliminar" por franja.
-  - Validación por franja: fin ≠ inicio, duración ≤ 24h.
-  - Validación global: sin solapamiento entre franjas, duración total ≤ 24h.
-  - Checkbox rápido "Turno noche cruza medianoche" (auto-detectado si fin < inicio en alguna franja).
-  - Campo opcional "Auxilio de transporte" (numérico COP, helper: "Solo suma al total final").
-  - Botón "Calcular" (disabled si jornada no guardada o turno inválido).
+- [x] **2.4.1** Componente `FormularioTurno.tsx`:
+  - [x] Input `type="date"` (fecha turno, default hoy).
+  - [x] **Múltiples franjas:** Lista de pares hora inicio/fin. Botón "Añadir franja" (máx 4). Botón "Eliminar" por franja.
+  - [x] Validación por franja: fin ≠ inicio, duración ≤ 24h.
+  - [x] Validación global: sin solapamiento entre franjas, duración total ≤ 24h.
+  - [ ] Checkbox rápido "Turno noche cruza medianoche" (auto-detectado si fin < inicio en alguna franja).
+  - [ ] Campo opcional "Auxilio de transporte" (numérico COP, helper: "Solo suma al total final"). — ✅ en App.tsx, no en FormularioTurno.
+  - [x] Botón "Calcular" (disabled si jornada no guardada o turno inválido).
 
 ### 2.5 Visualización de resultados
-- [ ] **2.5.1** `DesgloseHoras.tsx`: tabla/lista virtualizada (máx 24 rows) con columnas: Hora (ej "22:00–23:00"), Día real, Tipo (badge color), Festivo, Nocturna, Dentro jornada, Valor.
-- [ ] **2.5.2** `ResumenTotales.tsx`: grid de cards por `tipoHora` (solo los >0): "3h Extra nocturna • $45.210".
-- [ ] **2.5.3** `TotalPagar.tsx`: número grande, formato COP con separadores de miles (`$1.234.567`). Si hay auxilio transporte: línea "+ Auxilio transporte: $X" → Total final.
-- [ ] **2.5.4** `Advertencias.tsx`: lista de `Advertencia` con iconos (info/warning/error), siempre visible si hay alguna.
-- [ ] **2.5.5** `NotaLimitaciones.tsx`: fijo al pie de resultados con texto estándar del MVP (límite semanal no validado, sin prestaciones/seguridad social).
-- [ ] **2.5.6** Botón "Copiar total al portapapeles" → copia valor total formateado.
+- [x] **2.5.1** `DesgloseHoras.tsx`: tabla con columnas: Hora, Día real, Tipo (Badge color), Nocturna, Festivo, Dentro jornada, Valor.
+- [x] **2.5.2** `ResumenTotales.tsx`: grid de cards por `tipoHora` (solo los >0): "3h Extra nocturna • $45.210".
+- [x] **2.5.3** `TotalPagar.tsx`: número grande, formato COP con separadores de miles. Auxilio transporte línea separada.
+- [x] **2.5.4** `Advertencias.tsx`: lista de advertencias con Alert (info/warning/error).
+- [x] **2.5.5** `NotaLimitaciones.tsx`: separado en componente propio con Alert info + disclaimer legal.
+- [x] **2.5.6** Botón "Copiar total al portapapeles" → copia valor total formateado.
 
 ### 2.6 Sección educativa (informativa)
-- [ ] **2.6.1** Componente `SeccionEducativa.tsx` con tabs/acordeón:
+- [x] **2.6.1** Componente `SeccionEducativa.tsx` con Tabs + FAQ acordeón:
   - "¿Cómo se calcula?" (paso a paso lenguaje llano).
-  - "Tabla de recargos 2026" (tabla visual).
+  - "Tabla de recargos 2026" (tabla visual con Badge).
   - "Recargo vs Hora extra" (ejemplo numérico comparativo).
-  - "Ley Emiliani: festivos al lunes".
+  - "Ley Emiliani: festivos al lunes" (lista completa 2026).
   - "Límites legales horas extra".
-  - "Preguntas frecuentes" (5-6 FAQ).
+  - "Preguntas frecuentes" (6 FAQ con acordeón details/summary).
 - [ ] **2.6.2** Iconos SVG inline (lucide-react o heroicons) para legibilidad.
 
 ### 2.7 Integración y estado global
-- [ ] **2.7.1** Hook `useCalculo.ts`: orquesta `motor.calcularTurno()`, maneja loading/error/resultado, expone `calcular()`, `reset()`.
-- [ ] **2.7.2** Hook `useLocalStorage.ts` genérico para preferencias.
-- [ ] **2.7.3** `ErrorBoundary.tsx`: componente clase que captura errores en subárbol, muestra UI amable + botón "Reintentar" / "Limpiar", log en consola.
+- [x] **2.7.1** Hook `useCalculo.ts`: orquesta `motor.calcularTurno()`, maneja loading/error/resultado, expone `calcular()`, `reset()`.
+- [x] **2.7.2** Hook `useLocalStorage.ts` genérico para preferencias.
+- [x] **2.7.3** `ErrorBoundary.tsx`: componente clase que captura errores, muestra UI amable + botón "Reintentar", log en consola.
 - [ ] **2.7.4** `GA4.tsx`: inicialización `gtag` con Measurement ID desde `import.meta.env.VITE_GA_ID`, helpers `trackEvent(nombre, params)`, respetar `doNotTrack`.
-- [ ] **2.7.5** `App.tsx`: compone Layout → ErrorBoundary → (FormularioJornada + FormularioTurno) → Resultados → SeccionEducativa. Incluye GA4.
+- [x] **2.7.5** `App.tsx` refactorizado: compone Layout → ErrorBoundary → FormularioJornada + FormularioTurno → Resultados + SeccionEducativa + NotaLimitaciones + useTheme toggle.
 
 ### 2.8 Accesibilidad y pulido
 - [ ] **2.8.1** Labels asociados a inputs, `aria-describedby` para errores, `aria-live="polite"` en resultados.
@@ -178,12 +180,12 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 ## 3. TESTING — Pruebas automatizadas
 
 ### 3.1 Configuración
-- [ ] **3.1.1** Vitest configurado (`vitest.config.ts`), coverage con `v8`.
-- [ ] **3.1.2** Scripts `test`, `test:run`, `test:coverage` en `package.json`.
+- [x] **3.1.1** Vitest configurado (`vitest.config.ts`), coverage con `v8`.
+- [x] **3.1.2** Scripts `test`, `test:run`, `test:coverage` en `package.json`.
 
 ### 3.2 Tests unitarios (lógica pura) — ya listados en 1.7
-- [ ] **3.2.1** Ejecutar y pasar todos los tests de 1.7.2–1.7.6.
-- [ ] **3.2.2** Añadir tests de regresión para bugs encontrados en QA manual.
+- [x] **3.2.1** Ejecutar y pasar todos los tests de 1.7.2–1.7.6 (90 tests, 96.79% cobertura).
+- [x] **3.2.2** Añadidos tests de regresión para bugs: esHoraNocturna, esFestivoReal, FRANJA_INVALIDA, timezone UTC-5.
 
 ### 3.3 Tests de componentes (React Testing Library)
 - [ ] **3.3.1** `FormularioJornada`: render, validaciones, guardado en localStorage, horario por día dinámico.
@@ -280,11 +282,62 @@ Lista de tareas accionables, organizadas en 4 categorías secuenciales. Cada tar
 
 ---
 
-## 🎯 PRÓXIMO PASO RECOMENDADO
+## ✅ RESUMEN DE LO REALIZADO
 
-✅ **1.1 (constantes.ts, tipos.ts)** — COMPLETADO
-✅ **1.3 (festivos.ts base + cache)** — COMPLETADO
-✅ **2.1.1 (Tailwind v4 setup)** — COMPLETADO
-✅ **4.1.1 (build producción)** — COMPLETADO
+**Fase 1 — LÓGICA (100% completada)**
 
-⬜ **Siguiente: 1.2 → 1.4 → 1.5 → 1.6** (utilidades → clasificación → motor → barrel export)
+| Tarea | Archivo | Estado |
+|-------|---------|--------|
+| 1.1.1 | `constantes.ts` | ✅ Creado — CONSTANTES_2026, RECARGO_PORCENTAJES, LEGAL_LIMITS |
+| 1.1.2 | `tipos.ts` | ✅ Creado — TipoHora, interfaces, types (convertido a const+type por compatibilidad TS6) |
+| 1.2.1 | `utilidades.ts` | ✅ Creado — 9 funciones puras (redondeo, parsing, validaciones, generación horas) |
+| 1.3.1-2 | `festivos.ts` | ✅ Corregido — `'static'` en interface, cache Map, validación Invalid Date + null |
+| 1.4.1-3 | `clasificacion.ts` | ✅ Creado — tabla 8 casos, `estaDentroDeJornada` (cruce medianoche), `esDiaLaboralHabitual` |
+| 1.5.1 | `motor.ts` | ✅ Creado — orquestador completo con validaciones, cálculo hora a hora, agrupación, advertencias |
+| 1.6.1 | `index.ts` | ✅ Creado — barrel export público |
+| 1.7.1-6 | Tests unitarios | ✅ 90 tests, 4 archivos, 96.79% cobertura línea |
+
+**Configuración corregida:**
+- `tsconfig.app.json`: agregado `"strict": true`
+- `index.html`: `lang="en"` → `lang="es-CO"`, título descriptivo
+- `package.json`: dependencias verificadas sin conflictos
+
+**Errores de lógica corregidos en tests:**
+- `esHoraNocturna`: lógica invertida (usaba `>= 6` en vez de `>= 19 \|\| < 6`)
+- `esFestivoReal`: festivos no-dominicales perdían condición si el día estaba en jornada pactada
+- Tests usaban `new Date('YYYY-MM-DD')` (UTC) → error por zona horaria UTC-5
+- `validarTurno`: faltaba validación para franjas con `inicio === fin`
+
+**Fase 2 — DISEÑO (~90%)**:
+- ✅ 2.1.1 Tailwind v4 setup
+- ✅ 2.1.2 Componentes ui/ (Button, Input, Select, Card, Badge, Alert, Tabs)
+- ✅ 2.1.3 barrel index.ts para componentes ui/
+- ✅ 2.2.1 Layout.tsx (con theme toggle + dark: variant)
+- ✅ 2.2.2 Tema claro/oscuro (useTheme localStorage + Tailwind dark: variant)
+- ✅ 2.2.3 Responsive breakpoints (grid sm:grid-cols-2, sm:p-8, flex-wrap)
+- ✅ 2.3.1 FormularioJornada.tsx (validación + localStorage + theme-aware)
+- ✅ 2.4.1 FormularioTurno.tsx (múltiples franjas, validación, theme-aware)
+- ✅ 2.5.1-4,6 Resultados (DesgloseHoras, ResumenTotales, TotalPagar, Advertencias, Copiar — theme-aware)
+- ✅ 2.5.5 NotaLimitaciones.tsx (componente separado con Alert info + disclaimer)
+- ✅ 2.6.1 Sección educativa (Tabs con: Cómo se calcula, Tabla recargos, Recargo vs Extra, Ley Emiliani, Límites legales, FAQ con acordeón)
+- ⬜ 2.6.2 Iconos SVG inline (usando emojis por ahora)
+- ✅ 2.7.1-3 Hooks (useCalculo, useLocalStorage, useTheme) + ErrorBoundary
+- ⬜ 2.7.4 GA4.tsx (gtag + env var + doNotTrack)
+- ✅ 2.7.5 App.tsx refactorizado con SeccionEducativa, NotaLimitaciones, theme toggle
+- ⬜ 2.8 Accesibilidad (labels, aria, contraste, teclado)
+
+**Fase 3 — TESTING (~30%)**:
+- ✅ 3.1.1 Vitest configurado (`vitest.config.ts`), coverage v8
+- ✅ 3.1.2 Scripts `test`, `test:run`, `test:coverage` en `package.json`
+- ✅ 3.2.1 Unit tests (90 tests, 96.79% cobertura)
+- ⬜ 3.3 Component tests (React Testing Library)
+- ⬜ 3.4 Casos límite checklist
+- ⬜ 3.5 E2E (Playwright, opcional)
+
+**Fase 4 — DESPLIEGUE (~5%)**:
+- ✅ 4.1.1 Build verificado (JS 60KB gzip, CSS 6KB gzip)
+- ⬜ 4.1.2-3 Preview + bundle analysis
+- ⬜ 4.2 PWA (vite-plugin-pwa + workbox + offline)
+- ⬜ 4.3 Despliegue (Vercel/Netlify + env vars + headers)
+- ⬜ 4.4 Verificación post-despliegue (Lighthouse, móvil)
+- ⬜ 4.5 Documentación (README, CHANGELOG, release tag)
