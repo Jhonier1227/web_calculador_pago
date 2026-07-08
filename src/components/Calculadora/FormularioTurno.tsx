@@ -3,6 +3,7 @@ import { validarTurno } from '../../lib/calculos/index';
 import type { Turno } from '../../lib/calculos/index';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
+import { PlusIcon, TrashIcon, ClockIcon } from '../ui/Icons';
 
 interface FormularioTurnoProps {
   fecha: string;
@@ -32,6 +33,7 @@ export function FormularioTurno({
   const info = errores.filter((a) => a.severidad === 'info');
 
   const puedeCalcular = jornadaValida && erroresBloqueantes.length === 0;
+  const cruzaMedianoche = franjas.some((f) => f.fin < f.inicio);
 
   return (
     <section className="mb-8">
@@ -49,6 +51,13 @@ export function FormularioTurno({
           className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
         />
       </div>
+
+      {cruzaMedianoche && (
+        <Alert severity="info">
+          <ClockIcon className="mr-1 inline h-3.5 w-3.5 align-text-bottom" />
+          Turno cruza medianoche. Cada hora se clasifica según su día calendario real.
+        </Alert>
+      )}
 
       <div className="mb-4 space-y-2">
         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Franjas horarias</p>
@@ -79,9 +88,10 @@ export function FormularioTurno({
                   type="button"
                   onClick={() => onEliminarFranja(i)}
                   aria-label={`Eliminar franja ${i + 1}`}
-                  className="text-xs text-red-500 hover:text-red-400"
+                  className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-400"
                 >
-                  Eliminar
+                  <TrashIcon className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Eliminar</span>
                 </button>
               )}
             </div>
@@ -89,7 +99,8 @@ export function FormularioTurno({
         })}
         {franjas.length < 4 && (
           <Button variant="ghost" size="sm" onClick={onAgregarFranja}>
-            + Añadir franja
+            <PlusIcon className="mr-1 h-3.5 w-3.5" />
+            Añadir franja
           </Button>
         )}
       </div>

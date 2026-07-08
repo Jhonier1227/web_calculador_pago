@@ -1,15 +1,18 @@
-import { useState, useMemo, useCallback } from 'react';
-import { CONSTANTES_2026 } from './lib/calculos/index';
-import type { JornadaPactada, Turno } from './lib/calculos/index';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import { CONSTANTES_2026, calcularPeriodo } from './lib/calculos/index';
+import type { JornadaPactada, Turno, ConfiguracionPeriodo, ResultadoPeriodo as ResultadoPeriodoType } from './lib/calculos/index';
 import { Layout } from './components/Layout';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { Tabs } from './components/ui/Tabs';
 import { FormularioJornada } from './components/Calculadora/FormularioJornada';
 import { FormularioTurno } from './components/Calculadora/FormularioTurno';
+import { FormularioPeriodo } from './components/Calculadora/FormularioPeriodo';
 import { DesgloseHoras } from './components/Calculadora/DesgloseHoras';
 import { ResumenTotales } from './components/Calculadora/ResumenTotales';
 import { TotalPagar } from './components/Calculadora/TotalPagar';
 import { Advertencias } from './components/Calculadora/Advertencias';
 import { NotaLimitaciones } from './components/Calculadora/NotaLimitaciones';
+import { ResultadoPeriodo } from './components/Calculadora/ResultadoPeriodo';
 import { SeccionEducativa } from './components/SeccionEducativa';
 import { useCalculo } from './hooks/useCalculo';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -24,6 +27,42 @@ export default function App() {
     trackEvent('theme_toggle', { theme: next });
   }, [theme, toggleTheme]);
   const [salario, setSalario] = useLocalStorage<number>('salario', CONSTANTES_2026.SALARIO_MINIMO);
+  const [salarioStr, setSalarioStr] = useState(() => salario.toLocaleString('es-CO'));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const formatearSalario = (n: number) => n.toLocaleString('es-CO');
+
+  const handleSalarioFocus = () => setSalarioStr('');
+
+  const handleSalarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    const cursor = e.target.selectionStart ?? 0;
+    const digitsBefore = e.target.value.slice(0, cursor).replace(/\D/g, '').length;
+    const num = raw === '' ? 0 : Number(raw);
+    const formatted = raw === '' ? '' : formatearSalario(num);
+    setSalario(num);
+    setSalarioStr(formatted);
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      let pos = 0;
+      for (let i = 0, d = 0; i < formatted.length && d < digitsBefore; i++) {
+        if (formatted[i] !== '.') d++;
+        pos = i + 1;
+      }
+      el.setSelectionRange(pos, pos);
+    });
+  };
+
+  const handleSalarioBlur = () => {
+    if (salario === 0) {
+      setSalario(CONSTANTES_2026.SALARIO_MINIMO);
+      setSalarioStr(formatearSalario(CONSTANTES_2026.SALARIO_MINIMO));
+    } else {
+      setSalarioStr(formatearSalario(salario));
+    }
+  };
+
   const [auxilio, setAuxilio] = useState(0);
   const [dias, setDias] = useLocalStorage<number[]>('jornada_dias', [1, 2, 3, 4, 5]);
   const [horarios, setHorarios] = useLocalStorage<Record<number, { inicio: string; fin: string }>>(
@@ -41,19 +80,28 @@ export default function App() {
     { inicio: '18:00', fin: '22:00' },
   ]);
   const { resultado, error, calcular } = useCalculo();
+  const [periodoResultado, setPeriodoResultado] = useState<ResultadoPeriodoType | null>(null);
 
   const toggleDia = useCallback(
     (d: number) => {
-      setDias((prev) =>
-        prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort(),
-      );
+      setDias((prev) => {
+        if (prev.includes(d)) return prev.filter((x) => x !== d);
+        return [...prev, d].sort();
+      });
+      setHorarios((prev) => {
+        if (prev[d]) return prev;
+        return { ...prev, [d]: { inicio: '08:00', fin: '17:00' } };
+      });
     },
-    [setDias],
+    [setDias, setHorarios],
   );
 
   const updateHorario = useCallback(
     (dia: number, campo: 'inicio' | 'fin', valor: string) => {
-      setHorarios((prev) => ({ ...prev, [dia]: { ...prev[dia], [campo]: valor } }));
+      setHorarios((prev) => ({
+        ...prev,
+        [dia]: { ...(prev[dia] ?? { inicio: '08:00', fin: '17:00' }), [campo]: valor },
+      }));
     },
     [setHorarios],
   );
@@ -90,6 +138,16 @@ export default function App() {
     trackEvent('calcular', { salario, jornada_dias: dias.length, franjas: franjas.length });
   }, [calcular, salario, jornada, turno, auxilio, dias, franjas]);
 
+  const handleCalcularPeriodo = useCallback(
+    (config: ConfiguracionPeriodo) => {
+      setPeriodoResultado(null);
+      const res = calcularPeriodo(salario, jornada, config, auxilio || undefined);
+      setPeriodoResultado(res);
+      trackEvent('calcular_periodo', { salario, dias_en_rango: res.diasCalculados, bloques: config.bloques.length });
+    },
+    [salario, jornada, auxilio],
+  );
+
   return (
     <ErrorBoundary>
       <Layout theme={theme} onToggleTheme={handleToggleTheme}>
@@ -102,15 +160,22 @@ export default function App() {
               </label>
               <input
                 id="salario-input"
-                type="number"
-                value={salario}
-                onChange={(e) => setSalario(Number(e.target.value))}
+                ref={inputRef}
+                type="text"
+                inputMode="numeric"
+                value={salarioStr}
+                onChange={handleSalarioChange}
+                onFocus={handleSalarioFocus}
+                onBlur={handleSalarioBlur}
                 aria-describedby="salario-helper"
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
               <button
                 type="button"
-                onClick={() => setSalario(CONSTANTES_2026.SALARIO_MINIMO)}
+                onClick={() => {
+                  setSalario(CONSTANTES_2026.SALARIO_MINIMO);
+                  setSalarioStr(formatearSalario(CONSTANTES_2026.SALARIO_MINIMO));
+                }}
                 className="mt-1 text-xs text-emerald-600 underline hover:text-emerald-500 dark:text-emerald-500 dark:hover:text-emerald-400"
               >
                 Usar salario mínimo ($ {CONSTANTES_2026.SALARIO_MINIMO.toLocaleString('es-CO')})
@@ -140,33 +205,56 @@ export default function App() {
           jornada={jornada}
         />
 
-        <FormularioTurno
-          fecha={fecha}
-          franjas={franjas}
-          onFechaChange={setFecha}
-          onFranjaChange={updateFranja}
-          onAgregarFranja={agregarFranja}
-          onEliminarFranja={eliminarFranja}
-          turno={turno}
-          onCalcular={handleCalcular}
-          jornadaValida={jornadaValida}
+        <Tabs
+          className="mb-8"
+          tabs={[
+            {
+              id: 'individual',
+              label: 'Turno individual',
+              content: (
+                <>
+                  <FormularioTurno
+                    fecha={fecha}
+                    franjas={franjas}
+                    onFechaChange={setFecha}
+                    onFranjaChange={updateFranja}
+                    onAgregarFranja={agregarFranja}
+                    onEliminarFranja={eliminarFranja}
+                    turno={turno}
+                    onCalcular={handleCalcular}
+                    jornadaValida={jornadaValida}
+                  />
+
+                  {error && (
+                    <div role="alert" aria-live="polite" className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+                      {error}
+                    </div>
+                  )}
+
+                  {resultado && (
+                    <div aria-live="polite" className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                      <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
+                      <ResumenTotales resumen={resultado.resumenPorTipo} />
+                      <DesgloseHoras horas={resultado.desgloseHoras} />
+                      <Advertencias advertencias={resultado.advertencias} />
+                      <NotaLimitaciones />
+                    </div>
+                  )}
+                </>
+              ),
+            },
+            {
+              id: 'periodo',
+              label: 'Cálculo por período',
+              content: (
+                <>
+                  <FormularioPeriodo onCalcular={handleCalcularPeriodo} />
+                  {periodoResultado && <ResultadoPeriodo resultado={periodoResultado} />}
+                </>
+              ),
+            },
+          ]}
         />
-
-        {error && (
-          <div role="alert" aria-live="polite" className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
-            {error}
-          </div>
-        )}
-
-        {resultado && (
-          <div aria-live="polite" className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-            <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
-            <ResumenTotales resumen={resultado.resumenPorTipo} />
-            <DesgloseHoras horas={resultado.desgloseHoras} />
-            <Advertencias advertencias={resultado.advertencias} />
-            <NotaLimitaciones />
-          </div>
-        )}
 
         <SeccionEducativa />
       </Layout>

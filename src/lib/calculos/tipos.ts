@@ -77,4 +77,35 @@ export type CodigosAdvertencia =
   | 'HORA_FIN_IGUAL_INICIO'
   | 'DURACION_EXCEDE_24H'
   | 'SIN_DIAS_JORNADA'
-  | 'DIA_INVALIDO';
+  | 'DIA_INVALIDO'
+  | 'PERIODO_SIN_DIAS'
+  | 'BLOQUES_SOLAPADOS'
+  | 'RANGO_EXCEDE_31_DIAS'
+  | 'BLOQUE_FUERA_RANGO'
+  | 'RANGO_FECHA_INVALIDO'
+  | 'AUXILIO_PRORRATEADO';
+
+export interface BloqueHorario {
+  id: string;
+  fechaInicio: string;
+  fechaFin: string;
+  horariosPorDia: Record<number, { inicio: string; fin: string }>;
+}
+
+export interface ConfiguracionPeriodo {
+  fechaInicio: string;
+  fechaFin: string;
+  bloques: BloqueHorario[];
+}
+
+export interface ResultadoPeriodo {
+  totalAPagar: number;
+  resumenPorTipo: ResumenTipo[];
+  totalHorasOrdinarias: number;
+  totalHorasExtras: number;
+  totalHorasNocturnas: number;
+  totalHorasDominicalesFestivas: number;
+  advertencias: Advertencia[];
+  diasCalculados: number;
+  diasOmitidos: number;
+}
