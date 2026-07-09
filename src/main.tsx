@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhonier Stiven Montaño Castillo. Todos los derechos reservados.
+// Uso no autorizado de este código está estrictamente prohibido.
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

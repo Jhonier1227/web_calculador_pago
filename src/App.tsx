@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { CONSTANTES_2026, calcularPeriodo } from './lib/calculos/index';
 import type { JornadaPactada, Turno, ConfiguracionPeriodo, ResultadoPeriodo as ResultadoPeriodoType } from './lib/calculos/index';
+import { validarSalario } from './lib/validaciones/validarInputs';
 import { Layout } from './components/Layout';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Tabs } from './components/ui/Tabs';
@@ -13,6 +14,7 @@ import { TotalPagar } from './components/Calculadora/TotalPagar';
 import { Advertencias } from './components/Calculadora/Advertencias';
 import { NotaLimitaciones } from './components/Calculadora/NotaLimitaciones';
 import { ResultadoPeriodo } from './components/Calculadora/ResultadoPeriodo';
+import { CalculadoraBasica } from './components/Calculadora/CalculadoraBasica';
 import { SeccionEducativa } from './components/SeccionEducativa';
 import { useCalculo } from './hooks/useCalculo';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -28,6 +30,7 @@ export default function App() {
   }, [theme, toggleTheme]);
   const [salario, setSalario] = useLocalStorage<number>('salario', CONSTANTES_2026.SALARIO_MINIMO);
   const [salarioStr, setSalarioStr] = useState(() => salario.toLocaleString('es-CO'));
+  const [salarioError, setSalarioError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const formatearSalario = (n: number) => n.toLocaleString('es-CO');
@@ -42,6 +45,8 @@ export default function App() {
     const formatted = raw === '' ? '' : formatearSalario(num);
     setSalario(num);
     setSalarioStr(formatted);
+    const validacion = num > 0 ? validarSalario(num) : { esValido: true, mensaje: null };
+    setSalarioError(validacion.mensaje);
     requestAnimationFrame(() => {
       const el = inputRef.current;
       if (!el) return;
@@ -58,8 +63,11 @@ export default function App() {
     if (salario === 0) {
       setSalario(CONSTANTES_2026.SALARIO_MINIMO);
       setSalarioStr(formatearSalario(CONSTANTES_2026.SALARIO_MINIMO));
+      setSalarioError(null);
     } else {
       setSalarioStr(formatearSalario(salario));
+      const validacion = validarSalario(salario);
+      setSalarioError(validacion.mensaje);
     }
   };
 
@@ -134,6 +142,8 @@ export default function App() {
   const jornadaValida = dias.length > 0;
 
   const handleCalcular = useCallback(() => {
+    const val = validarSalario(salario);
+    if (!val.esValido) return;
     calcular(salario, jornada, turno, auxilio || undefined);
     trackEvent('calcular', { salario, jornada_dias: dias.length, franjas: franjas.length });
   }, [calcular, salario, jornada, turno, auxilio, dias, franjas]);
@@ -163,13 +173,23 @@ export default function App() {
                 ref={inputRef}
                 type="text"
                 inputMode="numeric"
-                value={salarioStr}
-                onChange={handleSalarioChange}
-                onFocus={handleSalarioFocus}
-                onBlur={handleSalarioBlur}
-                aria-describedby="salario-helper"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-              />
+                 value={salarioStr}
+                 onChange={handleSalarioChange}
+                 onFocus={handleSalarioFocus}
+                 onBlur={handleSalarioBlur}
+                 aria-describedby={salarioError ? 'salario-error' : 'salario-helper'}
+                 aria-invalid={!!salarioError}
+                 className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 dark:bg-slate-900 dark:text-white ${
+                   salarioError
+                     ? 'border-red-500 focus:ring-red-500'
+                     : 'border-slate-300 focus:ring-emerald-500 dark:border-slate-700'
+                 }`}
+               />
+               {salarioError && (
+                 <p id="salario-error" className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                   {salarioError}
+                 </p>
+               )}
               <button
                 type="button"
                 onClick={() => {
@@ -257,6 +277,16 @@ export default function App() {
         />
 
         <SeccionEducativa />
+
+        <section aria-labelledby="calculadora-section" className="mt-12 border-t border-slate-200 pt-8 dark:border-slate-800">
+          <h2 id="calculadora-section" className="mb-2 text-center text-lg font-bold text-slate-700 dark:text-slate-200">
+            Calculadora básica
+          </h2>
+          <p className="mb-6 text-center text-xs text-slate-400">
+            Herramienta auxiliar para operaciones aritméticas simples
+          </p>
+          <CalculadoraBasica />
+        </section>
       </Layout>
     </ErrorBoundary>
   );

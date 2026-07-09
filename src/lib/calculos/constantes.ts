@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhonier Stiven Montaño Castillo. Todos los derechos reservados.
+// Uso no autorizado de este código está estrictamente prohibido.
+
 export const CONSTANTES_2026 = {
   SALARIO_MINIMO: 1_750_905,
   JORNADA_SEMANAL_HORAS: 42,

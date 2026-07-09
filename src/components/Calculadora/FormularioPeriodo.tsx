@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { validarConfiguracionPeriodo } from '../../lib/calculos/index';
 import type { ConfiguracionPeriodo, BloqueHorario } from '../../lib/calculos/index';
+import { validarFechaNoAnterior } from '../../lib/validaciones/validarInputs';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
 import { PlusIcon, TrashIcon } from '../ui/Icons';
@@ -116,6 +117,14 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
             onChange={(e) => setFechaInicio(e.target.value)}
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
           />
+          {(() => {
+            const f = new Date(fechaInicio + 'T12:00:00');
+            const aviso = validarFechaNoAnterior(f);
+            if (aviso.mensaje) {
+              return <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">{aviso.mensaje}</p>;
+            }
+            return null;
+          })()}
         </div>
         <div>
           <label htmlFor="periodo-fin" className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -128,6 +137,14 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
             onChange={(e) => setFechaFin(e.target.value)}
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
           />
+          {(() => {
+            const f = new Date(fechaFin + 'T12:00:00');
+            const aviso = validarFechaNoAnterior(f);
+            if (aviso.mensaje) {
+              return <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">{aviso.mensaje}</p>;
+            }
+            return null;
+          })()}
         </div>
       </div>
 

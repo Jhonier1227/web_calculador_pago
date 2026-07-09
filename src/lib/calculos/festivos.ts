@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhonier Stiven Montaño Castillo. Todos los derechos reservados.
+// Uso no autorizado de este código está estrictamente prohibido.
+
 // @ts-expect-error - festivos-colombia no tiene tipos de TypeScript
 import fc from 'festivos-colombia';
 

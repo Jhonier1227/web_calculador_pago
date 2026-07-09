@@ -55,7 +55,7 @@ export function ResultadoPeriodo({ resultado }: ResultadoPeriodoProps) {
             <span>Días omitidos: <strong className="text-slate-700 dark:text-slate-200">{resultado.diasOmitidos}</strong></span>
           </div>
 
-          <ResumenTotales resumen={resultado.resumenPorTipo} />
+          <ResumenTotales resumen={resultado.resumenPorTipo} detalleDominicalFestivo={resultado.detalleDominicalFestivo} />
 
           <Advertencias advertencias={resultado.advertencias} />
 

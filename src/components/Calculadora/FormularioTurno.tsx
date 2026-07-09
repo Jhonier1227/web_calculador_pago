@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { validarTurno } from '../../lib/calculos/index';
 import type { Turno } from '../../lib/calculos/index';
+import { validarFechaNoAnterior } from '../../lib/validaciones/validarInputs';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
 import { PlusIcon, TrashIcon, ClockIcon } from '../ui/Icons';
@@ -50,6 +51,16 @@ export function FormularioTurno({
           onChange={(e) => onFechaChange(e.target.value)}
           className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
         />
+        {(() => {
+          const f = new Date(fecha + 'T12:00:00');
+          const aviso = validarFechaNoAnterior(f);
+          if (aviso.mensaje) {
+            return (
+              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">{aviso.mensaje}</p>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {cruzaMedianoche && (

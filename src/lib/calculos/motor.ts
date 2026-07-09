@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Jhonier Stiven Montaño Castillo. Todos los derechos reservados.
+// Uso no autorizado de este código está estrictamente prohibido.
+
 import { CONSTANTES_2026, LEGAL_LIMITS } from './constantes';
 import type { Turno, JornadaPactada, ResultadoCalculo, HoraCalculada, ResumenTipo, Advertencia, TipoHora } from './tipos';
 import { esFestivo } from './festivos';
@@ -16,6 +19,7 @@ export function calcularTurno(
   jornadaPactada: JornadaPactada,
   turno: Turno,
   auxilioTransporte?: number,
+  horasAcumuladasLV?: number,
 ): ResultadoCalculo {
   const advertencias: Advertencia[] = [];
 
@@ -74,7 +78,18 @@ export function calcularTurno(
     const esDomingo = hora.getDay() === 0;
     const esFestivoReal = esFestivo(hora) || (esDomingo && !esDiaLaboralHabitual(hora, jornadaPactada));
     const esNocturna = esHoraNocturna(hora);
-    const dentroDeJornada = estaDentroDeJornada(hora, jornadaPactada);
+    let dentroDeJornada = estaDentroDeJornada(hora, jornadaPactada);
+    // Acumulador semanal (solo aplica en contexto de período con calcularPeriodo):
+    // dentro de las 42h legales → toda hora es ordinaria (Art. 161 CST, Ley 2101)
+    // al superar las 42h → toda hora subsiguiente es extra
+    if (horasAcumuladasLV !== undefined) {
+      if (horasAcumuladasLV < CONSTANTES_2026.JORNADA_SEMANAL_HORAS) {
+        dentroDeJornada = true;
+      } else {
+        dentroDeJornada = false;
+      }
+      horasAcumuladasLV++;
+    }
     const clasificacion = clasificarHora(esFestivoReal, dentroDeJornada, esNocturna);
 
     const horaFin = new Date(hora);

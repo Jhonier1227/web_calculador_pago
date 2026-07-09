@@ -27,4 +27,4 @@ export {
 export { clasificarHora, estaDentroDeJornada, esDiaLaboralHabitual } from './clasificacion';
 export { calcularTurno } from './motor';
 export { validarConfiguracionPeriodo, calcularPeriodo } from './periodo';
-export type { BloqueHorario, ConfiguracionPeriodo, ResultadoPeriodo } from './tipos';
+export type { BloqueHorario, ConfiguracionPeriodo, ResultadoPeriodo, DetalleDominicalFestivo, MotivoRecargoDominical } from './tipos';

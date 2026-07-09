@@ -1,6 +1,7 @@
-import type { ConfiguracionPeriodo, ResultadoPeriodo, JornadaPactada, Turno, ResumenTipo, Advertencia, TipoHora } from './tipos';
+import type { ConfiguracionPeriodo, ResultadoPeriodo, JornadaPactada, Turno, ResumenTipo, Advertencia, TipoHora, DetalleDominicalFestivo, MotivoRecargoDominical } from './tipos';
 import { validarJornadaPactada, validarAñoFestivos, diaSemanaJSaISO } from './utilidades';
 import { calcularTurno } from './motor';
+import { nombreFestivo } from './festivos';
 
 export function validarConfiguracionPeriodo(config: ConfiguracionPeriodo): Advertencia[] {
   const advertencias: Advertencia[] = [];
@@ -78,6 +79,7 @@ function emptyResult(advertencias: Advertencia[]): ResultadoPeriodo {
     advertencias,
     diasCalculados: 0,
     diasOmitidos: 0,
+    detalleDominicalFestivo: [],
   };
 }
 
@@ -118,6 +120,8 @@ export function calcularPeriodo(
   let totalHorasDominicalesFestivas = 0;
   let diasCalculados = 0;
   let diasOmitidos = 0;
+  let acumuladorLV = 0;
+  const detalleDominicalFestivo: DetalleDominicalFestivo[] = [];
   const resumenMap = new Map<TipoHora, { cantidadHoras: number; valorTotal: number; recargos: number[] }>();
   const seenCodes = new Set<string>();
 
@@ -128,9 +132,10 @@ export function calcularPeriodo(
     severidad: 'info',
   });
 
-  const inicio = new Date(y1, m1 - 1, d1);
+  const current = new Date(y1, m1 - 1, d1);
+  current.setHours(0, 0, 0, 0);
   const fin = new Date(y2, m2 - 1, d2);
-  const current = new Date(inicio);
+  fin.setHours(0, 0, 0, 0);
 
   while (current <= fin) {
     const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
@@ -143,6 +148,11 @@ export function calcularPeriodo(
     }
 
     const diaISO = diaSemanaJSaISO(current.getDay());
+
+    if (diaISO === 1) {
+      acumuladorLV = 0;
+    }
+
     const horario = bloque.horariosPorDia[diaISO];
 
     if (!horario) {
@@ -156,15 +166,43 @@ export function calcularPeriodo(
       franjas: [{ inicio: horario.inicio, fin: horario.fin }],
     };
 
-    const resultado = calcularTurno(salarioMensual, jornadaPactada, turno, undefined);
+    const resultado = calcularTurno(
+      salarioMensual, jornadaPactada, turno, undefined,
+      acumuladorLV,
+    );
 
     totalAPagar += resultado.totalPagar;
 
+    let diaTieneFestivo = false;
     for (const h of resultado.desgloseHoras) {
       if (h.esHoraExtra) totalHorasExtras++;
       else totalHorasOrdinarias++;
       if (h.esNocturna) totalHorasNocturnas++;
       if (h.esFestivo) totalHorasDominicalesFestivas++;
+      if (h.esFestivo) diaTieneFestivo = true;
+    }
+
+    if (diaTieneFestivo) {
+      const esDomingo = current.getDay() === 0;
+      const nombre = nombreFestivo(current);
+      const motivo: MotivoRecargoDominical = {
+        esDomingo,
+        esFestivo: nombre !== null,
+        nombreFestivo: nombre,
+      };
+      for (const r of resultado.resumenPorTipo) {
+        if (r.tipoHora === 'RECARGO_DOMINICAL_DIURNO' || r.tipoHora === 'RECARGO_DOMINICAL_NOCTURNO' ||
+            r.tipoHora === 'EXTRA_DOMINICAL_DIURNA' || r.tipoHora === 'EXTRA_DOMINICAL_NOCTURNA') {
+          detalleDominicalFestivo.push({
+            fecha: dateStr,
+            tipoHora: r.tipoHora,
+            cantidadHoras: r.cantidadHoras,
+            valorTotal: r.valorTotal,
+            recargoPromedio: r.recargoPromedio,
+            motivo,
+          });
+        }
+      }
     }
 
     for (const r of resultado.resumenPorTipo) {
@@ -188,6 +226,8 @@ export function calcularPeriodo(
         advertencias.push(a);
       }
     }
+
+    acumuladorLV += resultado.desgloseHoras.length;
 
     diasCalculados++;
     current.setDate(current.getDate() + 1);
@@ -232,5 +272,6 @@ export function calcularPeriodo(
     advertencias,
     diasCalculados,
     diasOmitidos,
+    detalleDominicalFestivo,
   };
 }

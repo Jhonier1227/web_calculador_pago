@@ -66,6 +66,21 @@ export interface ResultadoCalculo {
   advertencias: Advertencia[];
 }
 
+export interface MotivoRecargoDominical {
+  esDomingo: boolean;
+  esFestivo: boolean;
+  nombreFestivo: string | null;
+}
+
+export interface DetalleDominicalFestivo {
+  fecha: string;
+  tipoHora: TipoHora;
+  cantidadHoras: number;
+  valorTotal: number;
+  recargoPromedio: number;
+  motivo: MotivoRecargoDominical;
+}
+
 export type CodigosAdvertencia =
   | 'HORAS_EXTRA_DIARIA_EXCEDIDA'
   | 'JORNADA_SEMANAL_EXCEDE_42H'
@@ -108,4 +123,5 @@ export interface ResultadoPeriodo {
   advertencias: Advertencia[];
   diasCalculados: number;
   diasOmitidos: number;
+  detalleDominicalFestivo: DetalleDominicalFestivo[];
 }
