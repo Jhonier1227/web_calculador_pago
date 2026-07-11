@@ -48,10 +48,10 @@ function TablaRecargos() {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-700 text-left text-xs text-slate-500">
-            <th scope="col" className="pb-2 pr-4 font-medium">Tipo</th>
-            <th scope="col" className="pb-2 pr-4 font-medium">Descripción</th>
-            <th scope="col" className="pb-2 font-medium">Recargo</th>
+            <tr className="border-b border-slate-700 text-left text-xs text-slate-600 dark:text-slate-500">
+             <th scope="col" className="pb-2 pr-4 font-medium">Tipo</th>
+             <th scope="col" className="pb-2 pr-4 font-medium">Descripción</th>
+             <th scope="col" className="pb-2 font-medium">Recargo</th>
           </tr>
         </thead>
         <tbody>
@@ -60,8 +60,8 @@ function TablaRecargos() {
               <td className="py-2 pr-4">
                 <Badge tipo={r.tipo} />
               </td>
-              <td className="py-2 pr-4 text-slate-300">{r.desc}</td>
-              <td className="py-2 font-mono text-slate-300">{r.recargo}</td>
+              <td className="py-2 pr-4 text-slate-700 dark:text-slate-300">{r.desc}</td>
+              <td className="py-2 font-mono text-slate-700 dark:text-slate-300">{r.recargo}</td>
             </tr>
           ))}
         </tbody>
@@ -72,11 +72,11 @@ function TablaRecargos() {
 
 function ComoSeCalcula() {
   return (
-    <ol className="list-inside list-decimal space-y-2 text-sm text-slate-300">
+    <ol className="list-inside list-decimal space-y-2 text-sm text-slate-700 dark:text-slate-300">
       <li>Se calcula el <strong>valor de la hora ordinaria</strong>: salario mensual ÷ 210.</li>
       <li>Se genera una hora por cada hora del turno (incluyendo cruce de medianoche).</li>
       <li>Por cada hora se determina:
-        <ul className="ml-5 mt-1 list-disc space-y-1 text-slate-400">
+          <ul className="ml-5 mt-1 list-disc space-y-1 text-slate-600 dark:text-slate-400">
           <li><strong>Dentro/fuera</strong> de jornada pactada (día + horario).</li>
           <li><strong>Nocturna</strong> (19:00 - 05:59) o diurna.</li>
           <li><strong>Festivo</strong> (domingo no laborable o festivo nacional).</li>
@@ -84,7 +84,7 @@ function ComoSeCalcula() {
       </li>
       <li>Con esas 3 condiciones se aplica la <strong>tabla de 8 casos</strong> para determinar el tipo de hora y su recargo.</li>
       <li>El <strong>valor por hora</strong> se calcula como:
-        <ul className="ml-5 mt-1 list-disc space-y-1 text-slate-400">
+          <ul className="ml-5 mt-1 list-disc space-y-1 text-slate-600 dark:text-slate-400">
           <li>Dentro de jornada: <code>valorHoraOrd × recargo</code></li>
           <li>Fuera de jornada: <code>valorHoraOrd × (1 + recargo)</code></li>
         </ul>
@@ -98,7 +98,7 @@ function RecargoVsExtra() {
   const horaOrd = 8_338;
   return (
     <div className="space-y-3 text-sm">
-      <p className="text-slate-300">
+      <p className="text-slate-700 dark:text-slate-300">
         Con salario mínimo 2026 ($ {CONSTANTES_2026.SALARIO_MINIMO.toLocaleString('es-CO')}):
         <br />
         Valor hora ordinaria = $ {horaOrd.toLocaleString('es-CO')} ({CONSTANTES_2026.SALARIO_MINIMO.toLocaleString('es-CO')} ÷ 210)
@@ -114,23 +114,23 @@ function RecargoVsExtra() {
           </thead>
           <tbody>
             <tr className="border-b border-slate-800">
-              <td className="py-2 pr-4 text-slate-300">Hora ordinaria diurna</td>
-              <td className="py-2 pr-4 font-mono text-slate-400">$8.338 × 0%</td>
+              <td className="py-2 pr-4 text-slate-700 dark:text-slate-300">Hora ordinaria diurna</td>
+              <td className="py-2 pr-4 font-mono text-slate-600 dark:text-slate-400">$8.338 × 0%</td>
               <td className="py-2 font-mono text-emerald-400">$8.338</td>
             </tr>
             <tr className="border-b border-slate-800">
-              <td className="py-2 pr-4 text-slate-300">Recargo nocturno (35%)</td>
-              <td className="py-2 pr-4 font-mono text-slate-400">$8.338 × 35%</td>
+              <td className="py-2 pr-4 text-slate-700 dark:text-slate-300">Recargo nocturno (35%)</td>
+              <td className="py-2 pr-4 font-mono text-slate-600 dark:text-slate-400">$8.338 × 35%</td>
               <td className="py-2 font-mono text-amber-400">$11.257</td>
             </tr>
             <tr className="border-b border-slate-800">
-              <td className="py-2 pr-4 text-slate-300">Extra diurna (25%)</td>
-              <td className="py-2 pr-4 font-mono text-slate-400">$8.338 × (1 + 25%)</td>
+              <td className="py-2 pr-4 text-slate-700 dark:text-slate-300">Extra diurna (25%)</td>
+              <td className="py-2 pr-4 font-mono text-slate-600 dark:text-slate-400">$8.338 × (1 + 25%)</td>
               <td className="py-2 font-mono text-amber-400">$10.423</td>
             </tr>
             <tr>
-              <td className="py-2 pr-4 text-slate-300">Extra nocturna (75%)</td>
-              <td className="py-2 pr-4 font-mono text-slate-400">$8.338 × (1 + 75%)</td>
+              <td className="py-2 pr-4 text-slate-700 dark:text-slate-300">Extra nocturna (75%)</td>
+              <td className="py-2 pr-4 font-mono text-slate-600 dark:text-slate-400">$8.338 × (1 + 75%)</td>
               <td className="py-2 font-mono text-red-400">$14.592</td>
             </tr>
           </tbody>
@@ -146,13 +146,13 @@ function RecargoVsExtra() {
 
 function LeyEmiliani() {
   return (
-    <div className="space-y-3 text-sm text-slate-300">
+    <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
       <p>
         La <strong>Ley Emiliani</strong> (Ley 51 de 1983) establece que la mayoría de los festivos
         nacionales se trasladan al lunes siguiente para incentivar el turismo y el descanso.
       </p>
       <p>Festivos que se rigen por esta ley en 2026:</p>
-      <ul className="ml-5 list-disc space-y-1 text-slate-400">
+      <ul className="ml-5 list-disc space-y-1 text-slate-600 dark:text-slate-400">
         <li>Reyes Magos (6 ene → lunes 12 ene)</li>
         <li>San José (19 mar → lunes 23 mar)</li>
         <li>Ascensión del Señor (→ lunes 25 may)</li>
@@ -175,7 +175,7 @@ function LeyEmiliani() {
 
 function LimitesLegales() {
   return (
-    <div className="space-y-3 text-sm text-slate-300">
+    <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
       <ul className="ml-5 list-disc space-y-2">
         <li>
           <strong>Jornada máxima semanal:</strong>{' '}
@@ -208,14 +208,14 @@ function FAQ() {
     <div className="space-y-3">
       {faq.map((item, i) => (
         <details key={i} className="group rounded-lg border border-slate-800">
-          <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:text-emerald-400 [&::-webkit-details-marker]:hidden">
+          <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-emerald-400 dark:text-slate-300 [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2">
               <span className="text-xs text-emerald-500">{i + 1}.</span>
               <span className="flex-1">{item.q}</span>
               <ChevronDownIcon className="h-4 w-4 text-slate-500 transition-transform group-open:rotate-180" />
             </span>
           </summary>
-          <p className="border-t border-slate-800 px-3 py-2 text-sm text-slate-400">
+          <p className="border-t border-slate-800 px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
             {item.a}
           </p>
         </details>

@@ -4,7 +4,6 @@ import type { JornadaPactada, Turno, ConfiguracionPeriodo, ResultadoPeriodo as R
 import { validarSalario } from './lib/validaciones/validarInputs';
 import { Layout } from './components/Layout';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Tabs } from './components/ui/Tabs';
 import { FormularioJornada } from './components/Calculadora/FormularioJornada';
 import { FormularioTurno } from './components/Calculadora/FormularioTurno';
 import { FormularioPeriodo } from './components/Calculadora/FormularioPeriodo';
@@ -21,13 +20,20 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { useTheme } from './hooks/useTheme';
 import { trackEvent } from './lib/analytics';
 
+type Seccion = 'turno' | 'periodo' | 'calculadora';
+
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
+  const [seccionActiva, setSeccionActiva] = useState<Seccion>('periodo');
   const handleToggleTheme = useCallback(() => {
     const next = theme === 'dark' ? 'light' : 'dark';
     toggleTheme();
     trackEvent('theme_toggle', { theme: next });
   }, [theme, toggleTheme]);
+  const handleCambiarSeccion = useCallback((s: Seccion) => {
+    setSeccionActiva(s);
+    trackEvent('navegar', { seccion: s });
+  }, []);
   const [salario, setSalario] = useLocalStorage<number>('salario', CONSTANTES_2026.SALARIO_MINIMO);
   const [salarioStr, setSalarioStr] = useState(() => salario.toLocaleString('es-CO'));
   const [salarioError, setSalarioError] = useState<string | null>(null);
@@ -160,7 +166,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <Layout theme={theme} onToggleTheme={handleToggleTheme}>
+      <Layout theme={theme} onToggleTheme={handleToggleTheme} seccionActiva={seccionActiva} onCambiarSeccion={handleCambiarSeccion}>
         <section aria-labelledby="datos-section">
           <h2 id="datos-section" className="sr-only">Datos del cálculo</h2>
           <div className="mb-8 grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50 sm:grid-cols-2">
@@ -173,23 +179,23 @@ export default function App() {
                 ref={inputRef}
                 type="text"
                 inputMode="numeric"
-                 value={salarioStr}
-                 onChange={handleSalarioChange}
-                 onFocus={handleSalarioFocus}
-                 onBlur={handleSalarioBlur}
-                 aria-describedby={salarioError ? 'salario-error' : 'salario-helper'}
-                 aria-invalid={!!salarioError}
-                 className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 dark:bg-slate-900 dark:text-white ${
-                   salarioError
-                     ? 'border-red-500 focus:ring-red-500'
-                     : 'border-slate-300 focus:ring-emerald-500 dark:border-slate-700'
-                 }`}
-               />
-               {salarioError && (
-                 <p id="salario-error" className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
-                   {salarioError}
-                 </p>
-               )}
+                value={salarioStr}
+                onChange={handleSalarioChange}
+                onFocus={handleSalarioFocus}
+                onBlur={handleSalarioBlur}
+                aria-describedby={salarioError ? 'salario-error' : 'salario-helper'}
+                aria-invalid={!!salarioError}
+                className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 dark:bg-slate-900 dark:text-white ${
+                  salarioError
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-slate-300 focus:ring-emerald-500 dark:border-slate-700'
+                }`}
+              />
+              {salarioError && (
+                <p id="salario-error" className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                  {salarioError}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -225,68 +231,58 @@ export default function App() {
           jornada={jornada}
         />
 
-        <Tabs
-          className="mb-8"
-          tabs={[
-            {
-              id: 'individual',
-              label: 'Turno individual',
-              content: (
-                <>
-                  <FormularioTurno
-                    fecha={fecha}
-                    franjas={franjas}
-                    onFechaChange={setFecha}
-                    onFranjaChange={updateFranja}
-                    onAgregarFranja={agregarFranja}
-                    onEliminarFranja={eliminarFranja}
-                    turno={turno}
-                    onCalcular={handleCalcular}
-                    jornadaValida={jornadaValida}
-                  />
+        {seccionActiva === 'turno' && (
+          <>
+            <FormularioTurno
+              fecha={fecha}
+              franjas={franjas}
+              onFechaChange={setFecha}
+              onFranjaChange={updateFranja}
+              onAgregarFranja={agregarFranja}
+              onEliminarFranja={eliminarFranja}
+              turno={turno}
+              onCalcular={handleCalcular}
+              jornadaValida={jornadaValida}
+            />
 
-                  {error && (
-                    <div role="alert" aria-live="polite" className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
-                      {error}
-                    </div>
-                  )}
+            {error && (
+              <div role="alert" aria-live="polite" className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+                {error}
+              </div>
+            )}
 
-                  {resultado && (
-                    <div aria-live="polite" className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-                      <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
-                      <ResumenTotales resumen={resultado.resumenPorTipo} />
-                      <DesgloseHoras horas={resultado.desgloseHoras} />
-                      <Advertencias advertencias={resultado.advertencias} />
-                      <NotaLimitaciones />
-                    </div>
-                  )}
-                </>
-              ),
-            },
-            {
-              id: 'periodo',
-              label: 'Cálculo por período',
-              content: (
-                <>
-                  <FormularioPeriodo onCalcular={handleCalcularPeriodo} />
-                  {periodoResultado && <ResultadoPeriodo resultado={periodoResultado} />}
-                </>
-              ),
-            },
-          ]}
-        />
+            {resultado && (
+              <div aria-live="polite" className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
+                <ResumenTotales resumen={resultado.resumenPorTipo} />
+                <DesgloseHoras horas={resultado.desgloseHoras} />
+                <Advertencias advertencias={resultado.advertencias} />
+                <NotaLimitaciones />
+              </div>
+            )}
+          </>
+        )}
+
+        {seccionActiva === 'periodo' && (
+          <>
+            <FormularioPeriodo onCalcular={handleCalcularPeriodo} />
+            {periodoResultado && <ResultadoPeriodo resultado={periodoResultado} />}
+          </>
+        )}
+
+        {seccionActiva === 'calculadora' && (
+          <section aria-labelledby="calculadora-section">
+            <h2 id="calculadora-section" className="mb-2 text-center text-lg font-bold text-slate-700 dark:text-slate-200">
+              Calculadora básica
+            </h2>
+            <p className="mb-6 text-center text-xs text-slate-400">
+              Herramienta auxiliar para operaciones aritméticas simples
+            </p>
+            <CalculadoraBasica />
+          </section>
+        )}
 
         <SeccionEducativa />
-
-        <section aria-labelledby="calculadora-section" className="mt-12 border-t border-slate-200 pt-8 dark:border-slate-800">
-          <h2 id="calculadora-section" className="mb-2 text-center text-lg font-bold text-slate-700 dark:text-slate-200">
-            Calculadora básica
-          </h2>
-          <p className="mb-6 text-center text-xs text-slate-400">
-            Herramienta auxiliar para operaciones aritméticas simples
-          </p>
-          <CalculadoraBasica />
-        </section>
       </Layout>
     </ErrorBoundary>
   );

@@ -2,6 +2,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+html, body, #root {
+  background-color: #ffffff;
+}
+
+.dark, .dark body, .dark #root {
+  background-color: #020617;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
