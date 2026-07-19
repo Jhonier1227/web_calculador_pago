@@ -79,7 +79,14 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
   };
 
   const agregarBloque = () => {
-    setBloques((prev) => [...prev, defaultBloque(fechaInicio, fechaFin)]);
+    setBloques((prev) => {
+      const ultimo = prev[prev.length - 1];
+      const nuevo = defaultBloque(fechaInicio, fechaFin);
+      if (ultimo) {
+        nuevo.horariosPorDia = { ...ultimo.horariosPorDia };
+      }
+      return [...prev, nuevo];
+    });
   };
 
   const eliminarBloque = (bloqueIndex: number) => {
@@ -154,17 +161,19 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
           <div key={bloque.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/50">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Bloque {i + 1}</span>
-              {bloques.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => eliminarBloque(i)}
-                  aria-label={`Eliminar bloque ${i + 1}`}
-                  className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-400"
-                >
-                  <TrashIcon className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Eliminar</span>
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {bloques.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => eliminarBloque(i)}
+                    aria-label={`Eliminar bloque ${i + 1}`}
+                    className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-400"
+                  >
+                    <TrashIcon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Eliminar</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mb-3 grid gap-2 sm:grid-cols-2">

@@ -37,3 +37,8 @@
 #### Bugs corregidos
 - Jornada 8-17 + bloque 6-14 producía 10 horas EXTRA (debían ser 0) — acumulador semanal extendido a todos los días
 - 21 omitidos en rango de 26 días — normalización con setHours(0,0,0,0) en el iterador de fechas
+- Auxilio de transporte sin formato de miles — corregido con type="text" + formateo es-CO y focus/blur handlers
+- Tablas de recargos sin diseño responsive en móvil — corregido con patrón tabla/tarjetas
+- Textos educativos y footer ilegibles en modo claro — corregido con variantes dark:
+- Secciones sin transición visual — corregido con fade opacity vía relative/absolute + pointer-events-none
+- Calculadora: sin formato de miles al digitar, sin tecla ⌫, sin expresión de operación activa — corregido con formato en vivo, retroceder, y display de expresión

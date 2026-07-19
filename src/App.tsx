@@ -38,6 +38,7 @@ export default function App() {
   const [salarioStr, setSalarioStr] = useState(() => salario.toLocaleString('es-CO'));
   const [salarioError, setSalarioError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const auxilioRef = useRef<HTMLInputElement>(null);
 
   const formatearSalario = (n: number) => n.toLocaleString('es-CO');
 
@@ -78,6 +79,33 @@ export default function App() {
   };
 
   const [auxilio, setAuxilio] = useState(0);
+  const [auxilioStr, setAuxilioStr] = useState('0');
+  const handleAuxilioFocus = () => setAuxilioStr('');
+
+  const handleAuxilioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    const cursor = e.target.selectionStart ?? 0;
+    const digitsBefore = e.target.value.slice(0, cursor).replace(/\D/g, '').length;
+    const num = raw === '' ? 0 : Number(raw);
+    const formatted = raw === '' ? '' : formatearSalario(num);
+    setAuxilio(num);
+    setAuxilioStr(formatted);
+    requestAnimationFrame(() => {
+      const el = auxilioRef.current;
+      if (!el) return;
+      let pos = 0;
+      for (let i = 0, d = 0; i < formatted.length && d < digitsBefore; i++) {
+        if (formatted[i] !== '.') d++;
+        pos = i + 1;
+      }
+      el.setSelectionRange(pos, pos);
+    });
+  };
+
+  const handleAuxilioBlur = () => {
+    setAuxilioStr(auxilio === 0 ? '' : formatearSalario(auxilio));
+  };
+
   const [dias, setDias] = useLocalStorage<number[]>('jornada_dias', [1, 2, 3, 4, 5]);
   const [horarios, setHorarios] = useLocalStorage<Record<number, { inicio: string; fin: string }>>(
     'jornada_horarios',
@@ -213,9 +241,13 @@ export default function App() {
               </label>
               <input
                 id="auxilio-input"
-                type="number"
-                value={auxilio}
-                onChange={(e) => setAuxilio(Number(e.target.value))}
+                ref={auxilioRef}
+                type="text"
+                inputMode="numeric"
+                value={auxilioStr}
+                onChange={handleAuxilioChange}
+                onFocus={handleAuxilioFocus}
+                onBlur={handleAuxilioBlur}
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
               <p id="salario-helper" className="mt-1 text-xs text-slate-400 dark:text-slate-500">Solo suma al total final</p>
@@ -231,9 +263,9 @@ export default function App() {
           jornada={jornada}
         />
 
-        {seccionActiva === 'turno' && (
-          <>
-            <FormularioTurno
+        <div className="relative">
+        <div className={`transition-opacity duration-150 ${seccionActiva === 'turno' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`} aria-hidden={seccionActiva !== 'turno'}>
+          <FormularioTurno
               fecha={fecha}
               franjas={franjas}
               onFechaChange={setFecha}
@@ -260,17 +292,14 @@ export default function App() {
                 <NotaLimitaciones />
               </div>
             )}
-          </>
-        )}
+            </div>
 
-        {seccionActiva === 'periodo' && (
-          <>
-            <FormularioPeriodo onCalcular={handleCalcularPeriodo} />
-            {periodoResultado && <ResultadoPeriodo resultado={periodoResultado} />}
-          </>
-        )}
+        <div className={`transition-opacity duration-150 ${seccionActiva === 'periodo' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`} aria-hidden={seccionActiva !== 'periodo'}>
+          <FormularioPeriodo onCalcular={handleCalcularPeriodo} />
+          {periodoResultado && <ResultadoPeriodo resultado={periodoResultado} />}
+        </div>
 
-        {seccionActiva === 'calculadora' && (
+        <div className={`transition-opacity duration-150 ${seccionActiva === 'calculadora' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`} aria-hidden={seccionActiva !== 'calculadora'}>
           <section aria-labelledby="calculadora-section">
             <h2 id="calculadora-section" className="mb-2 text-center text-lg font-bold text-slate-700 dark:text-slate-200">
               Calculadora básica
@@ -280,7 +309,8 @@ export default function App() {
             </p>
             <CalculadoraBasica />
           </section>
-        )}
+        </div>
+        </div>
 
         <SeccionEducativa />
       </Layout>

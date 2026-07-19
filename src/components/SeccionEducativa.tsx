@@ -45,8 +45,9 @@ const faq = [
 
 function TablaRecargos() {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="w-full overflow-x-auto md:overflow-visible">
+      {/* Tabla — desktop */}
+      <table className="hidden w-full text-sm md:table">
         <thead>
             <tr className="border-b border-slate-700 text-left text-xs text-slate-600 dark:text-slate-500">
              <th scope="col" className="pb-2 pr-4 font-medium">Tipo</th>
@@ -66,6 +67,25 @@ function TablaRecargos() {
           ))}
         </tbody>
       </table>
+
+      {/* Tarjetas — móvil */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {recargoRows.map((r) => (
+          <div key={r.tipo} className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+            <div className="mb-2">
+              <Badge tipo={r.tipo} />
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 dark:text-slate-400">Descripción</span>
+              <span className="text-right text-slate-800 dark:text-slate-200">{r.desc}</span>
+            </div>
+            <div className="mt-1 flex justify-between text-sm">
+              <span className="text-slate-500 dark:text-slate-400">Recargo</span>
+              <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{r.recargo}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -103,8 +123,9 @@ function RecargoVsExtra() {
         <br />
         Valor hora ordinaria = $ {horaOrd.toLocaleString('es-CO')} ({CONSTANTES_2026.SALARIO_MINIMO.toLocaleString('es-CO')} ÷ 210)
       </p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="w-full overflow-x-auto md:overflow-visible">
+        {/* Tabla — desktop */}
+        <table className="hidden w-full text-sm md:table">
           <thead>
             <tr className="border-b border-slate-700 text-left text-xs text-slate-500">
               <th scope="col" className="pb-2 pr-4 font-medium">Situación</th>
@@ -135,6 +156,28 @@ function RecargoVsExtra() {
             </tr>
           </tbody>
         </table>
+
+        {/* Tarjetas — móvil */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {[
+            { situacion: 'Hora ordinaria diurna', calculo: '$8.338 × 0%', valor: '$8.338', colorValor: 'text-emerald-600 dark:text-emerald-400' },
+            { situacion: 'Recargo nocturno (35%)', calculo: '$8.338 × 35%', valor: '$11.257', colorValor: 'text-amber-600 dark:text-amber-400' },
+            { situacion: 'Extra diurna (25%)', calculo: '$8.338 × (1 + 25%)', valor: '$10.423', colorValor: 'text-amber-600 dark:text-amber-400' },
+            { situacion: 'Extra nocturna (75%)', calculo: '$8.338 × (1 + 75%)', valor: '$14.592', colorValor: 'text-red-600 dark:text-red-400' },
+          ].map((r, i) => (
+            <div key={i} className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+              <p className="mb-2 font-medium text-slate-800 dark:text-slate-200">{r.situacion}</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500 dark:text-slate-400">Cálculo</span>
+                <span className="font-mono text-slate-600 dark:text-slate-400">{r.calculo}</span>
+              </div>
+              <div className="mt-1 flex justify-between text-sm">
+                <span className="text-slate-500 dark:text-slate-400">Valor por hora</span>
+                <span className={`font-mono font-medium ${r.colorValor}`}>{r.valor}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <p className="text-xs text-slate-500">
         Los recargos se aplican sobre el valor de la hora ordinaria.
