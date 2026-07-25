@@ -22,18 +22,38 @@ import { trackEvent } from './lib/analytics';
 
 type Seccion = 'turno' | 'periodo' | 'calculadora';
 
+const ORDEN_TABS: Record<Seccion, number> = {
+  turno: 0,
+  periodo: 1,
+  calculadora: 2,
+} as const;
+
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const [seccionActiva, setSeccionActiva] = useState<Seccion>('periodo');
+  const [direccionSlide, setDireccionSlide] = useState<'izquierda' | 'derecha'>('derecha');
+  const [animando, setAnimando] = useState(false);
+
   const handleToggleTheme = useCallback(() => {
     const next = theme === 'dark' ? 'light' : 'dark';
     toggleTheme();
     trackEvent('theme_toggle', { theme: next });
   }, [theme, toggleTheme]);
-  const handleCambiarSeccion = useCallback((s: Seccion) => {
-    setSeccionActiva(s);
-    trackEvent('navegar', { seccion: s });
-  }, []);
+
+  const cambiarSeccion = useCallback((nueva: Seccion) => {
+    if (nueva === seccionActiva || animando) return;
+
+    const direccion = ORDEN_TABS[nueva] > ORDEN_TABS[seccionActiva] ? 'derecha' : 'izquierda';
+
+    setDireccionSlide(direccion);
+    setAnimando(true);
+    setSeccionActiva(nueva);
+    trackEvent('navegar', { seccion: nueva });
+
+    setTimeout(() => {
+      setAnimando(false);
+    }, 350);
+  }, [seccionActiva, animando]);
   const [salario, setSalario] = useLocalStorage<number>('salario', CONSTANTES_2026.SALARIO_MINIMO);
   const [salarioStr, setSalarioStr] = useState(() => salario.toLocaleString('es-CO'));
   const [salarioError, setSalarioError] = useState<string | null>(null);
@@ -194,7 +214,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <Layout theme={theme} onToggleTheme={handleToggleTheme} seccionActiva={seccionActiva} onCambiarSeccion={handleCambiarSeccion}>
+      <Layout theme={theme} onToggleTheme={handleToggleTheme} seccionActiva={seccionActiva} onCambiarSeccion={cambiarSeccion} animando={animando}>
         <section aria-labelledby="datos-section">
           <h2 id="datos-section" className="sr-only">Datos del cálculo</h2>
           <div className="mb-8 grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50 sm:grid-cols-2">
@@ -263,53 +283,69 @@ export default function App() {
           jornada={jornada}
         />
 
-        <div className="relative">
-        <div className={`transition-opacity duration-150 ${seccionActiva === 'turno' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`} aria-hidden={seccionActiva !== 'turno'}>
-          <FormularioTurno
-              fecha={fecha}
-              franjas={franjas}
-              onFechaChange={setFecha}
-              onFranjaChange={updateFranja}
-              onAgregarFranja={agregarFranja}
-              onEliminarFranja={eliminarFranja}
-              turno={turno}
-              onCalcular={handleCalcular}
-              jornadaValida={jornadaValida}
-            />
+        {/* Contenedor del slide — solo contenido específico de sección */}
+        <div className="flex-1 min-w-0 overflow-hidden relative">
+          <div
+            key={seccionActiva}
+            className={
+              animando
+                ? direccionSlide === 'derecha'
+                  ? 'slide-in-right'
+                  : 'slide-in-left'
+                : ''
+            }
+          >
+            {seccionActiva === 'turno' && (
+              <>
+                <FormularioTurno
+                  fecha={fecha}
+                  franjas={franjas}
+                  onFechaChange={setFecha}
+                  onFranjaChange={updateFranja}
+                  onAgregarFranja={agregarFranja}
+                  onEliminarFranja={eliminarFranja}
+                  turno={turno}
+                  onCalcular={handleCalcular}
+                  jornadaValida={jornadaValida}
+                />
 
-            {error && (
-              <div role="alert" aria-live="polite" className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
-                {error}
-              </div>
+                {error && (
+                  <div role="alert" aria-live="polite" className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+                    {error}
+                  </div>
+                )}
+
+                {resultado && (
+                  <div aria-live="polite" className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                    <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
+                    <ResumenTotales resumen={resultado.resumenPorTipo} />
+                    <DesgloseHoras horas={resultado.desgloseHoras} />
+                    <Advertencias advertencias={resultado.advertencias} />
+                    <NotaLimitaciones />
+                  </div>
+                )}
+              </>
             )}
 
-            {resultado && (
-              <div aria-live="polite" className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-                <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
-                <ResumenTotales resumen={resultado.resumenPorTipo} />
-                <DesgloseHoras horas={resultado.desgloseHoras} />
-                <Advertencias advertencias={resultado.advertencias} />
-                <NotaLimitaciones />
-              </div>
+            {seccionActiva === 'periodo' && (
+              <>
+                <FormularioPeriodo onCalcular={handleCalcularPeriodo} />
+                {periodoResultado && <ResultadoPeriodo resultado={periodoResultado} />}
+              </>
             )}
-            </div>
 
-        <div className={`transition-opacity duration-150 ${seccionActiva === 'periodo' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`} aria-hidden={seccionActiva !== 'periodo'}>
-          <FormularioPeriodo onCalcular={handleCalcularPeriodo} />
-          {periodoResultado && <ResultadoPeriodo resultado={periodoResultado} />}
-        </div>
-
-        <div className={`transition-opacity duration-150 ${seccionActiva === 'calculadora' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`} aria-hidden={seccionActiva !== 'calculadora'}>
-          <section aria-labelledby="calculadora-section">
-            <h2 id="calculadora-section" className="mb-2 text-center text-lg font-bold text-slate-700 dark:text-slate-200">
-              Calculadora básica
-            </h2>
-            <p className="mb-6 text-center text-xs text-slate-400">
-              Herramienta auxiliar para operaciones aritméticas simples
-            </p>
-            <CalculadoraBasica />
-          </section>
-        </div>
+            {seccionActiva === 'calculadora' && (
+              <section aria-labelledby="calculadora-section">
+                <h2 id="calculadora-section" className="mb-2 text-center text-lg font-bold text-slate-700 dark:text-slate-200">
+                  Calculadora básica
+                </h2>
+                <p className="mb-6 text-center text-xs text-slate-400">
+                  Herramienta auxiliar para operaciones aritméticas simples
+                </p>
+                <CalculadoraBasica />
+              </section>
+            )}
+          </div>
         </div>
 
         <SeccionEducativa />

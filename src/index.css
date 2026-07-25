@@ -36,6 +36,45 @@ html, body, #root {
   color-scheme: dark;
 }
 
+/* ── Entradas decorativas ── */
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.plant-enter-1 { animation: fadeInLeft 0.8s ease-out both; }
+.plant-enter-2 { animation: fadeInLeft 1.0s ease-out both; }
+.plant-enter-3 { animation: fadeInLeft 1.2s ease-out both; }
+.maceta-enter  { animation: fadeIn 1.0s ease-out both; }
+
+/* ── Animaciones foliares ── */
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(4deg); }
+}
+
+@keyframes swayReverse {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-3deg); }
+}
+
+@keyframes swaySubtle {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(1.5deg); }
+}
+
+.sw-leaf-1 { transform-origin: left center; animation: sway 4s ease-in-out infinite; }
+.sw-leaf-2 { transform-origin: left center; animation: swayReverse 5s ease-in-out infinite; }
+.sw-leaf-3 { transform-origin: left center; animation: sway 4.5s ease-in-out infinite; }
+.sw-leaf-4 { transform-origin: left center; animation: swaySubtle 3s ease-in-out infinite; }
+.sw-leaf-5 { transform-origin: left center; animation: swayReverse 4s ease-in-out infinite; }
+.sw-leaf-6 { transform-origin: left center; animation: swaySubtle 3.5s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -44,5 +83,86 @@ html, body, #root {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ── Transición slide entre secciones ── */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+@keyframes swayActive {
+  0%   { transform: rotate(-4deg); transform-origin: bottom center; }
+  25%  { transform: rotate(5deg);  transform-origin: bottom center; }
+  75%  { transform: rotate(-3deg); transform-origin: bottom center; }
+  100% { transform: rotate(0deg);  transform-origin: bottom center; }
+}
+
+.slide-in-right {
+  animation: slideInFromRight 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+.slide-in-left {
+  animation: slideInFromLeft 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+.slide-out-left {
+  animation: slideOutToLeft 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+.slide-out-right {
+  animation: slideOutToRight 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.sw-leaf-active {
+  animation: swayActive 0.35s ease-out both !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-in-right, .slide-in-left,
+  .slide-out-left, .slide-out-right {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .sw-leaf-active {
+    animation: none !important;
   }
 }

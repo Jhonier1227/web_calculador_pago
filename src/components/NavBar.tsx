@@ -45,17 +45,6 @@ function NavItem({
 export function NavBar({ activa, onChange }: NavBarProps) {
   return (
     <>
-      {/* Sidebar — desktop */}
-      <nav
-        aria-label="Secciones"
-        className="fixed right-0 top-0 z-40 hidden h-screen w-20 flex-col items-center gap-3 border-l border-slate-800 bg-slate-900/80 pt-4 backdrop-blur-sm md:flex"
-      >
-        {items.map((item) => (
-          <NavItem key={item.id} {...item} activa={activa === item.id} onChange={onChange} />
-        ))}
-      </nav>
-
-      {/* Bottom bar — móvil */}
       <nav
         aria-label="Secciones"
         className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-slate-800 bg-slate-900/90 backdrop-blur-sm md:hidden"
