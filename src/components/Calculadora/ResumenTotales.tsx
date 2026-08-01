@@ -9,6 +9,11 @@ const TIPOS_DOMINICALES = new Set([
   'EXTRA_DOMINICAL_NOCTURNA',
 ]);
 
+const diaLabels: Record<number, string> = {
+  0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles',
+  4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
+};
+
 interface ResumenTotalesProps {
   resumen: ResumenTipo[];
   detalleDominicalFestivo?: DetalleDominicalFestivo[];
@@ -20,11 +25,22 @@ function formatearFechaLocal(dateStr: string): string {
   return fecha.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+function formatoRecargoLabel(bloque: DetalleDominicalFestivo): string {
+  if (bloque.motivo.nombreFestivo) {
+    return `Festivo · ${bloque.motivo.nombreFestivo}`;
+  }
+  if (bloque.motivo.tipoJornada === 'rotativo') {
+    return `Descanso obligatorio (${diaLabels[bloque.motivo.diaDescanso] ?? 'Domingo'})`;
+  }
+  return 'Domingo';
+}
+
 export function ResumenTotales({ resumen, detalleDominicalFestivo }: ResumenTotalesProps) {
   if (resumen.length === 0) return null;
 
   const resumenNoDominical = resumen.filter((r) => !TIPOS_DOMINICALES.has(r.tipoHora));
   const totalDominicales = resumen.filter((r) => TIPOS_DOMINICALES.has(r.tipoHora));
+  const esRotativo = detalleDominicalFestivo?.some((dd) => dd.motivo.tipoJornada === 'rotativo');
 
   return (
     <div className="mt-4">
@@ -58,9 +74,7 @@ export function ResumenTotales({ resumen, detalleDominicalFestivo }: ResumenTota
               <div key={i} className="flex items-center justify-between rounded bg-rose-50/50 px-2 py-1.5 text-xs dark:bg-rose-950/20">
                 <div className="flex flex-col">
                   <span className="font-medium text-slate-700 dark:text-slate-200">
-                    {dd.motivo.esDomingo && dd.motivo.nombreFestivo
-                      ? `Domingo · ${dd.motivo.nombreFestivo}`
-                      : dd.motivo.nombreFestivo || 'Domingo'}
+                    {formatoRecargoLabel(dd)}
                   </span>
                   <span className="text-slate-400">{formatearFechaLocal(dd.fecha)}</span>
                 </div>
@@ -75,6 +89,11 @@ export function ResumenTotales({ resumen, detalleDominicalFestivo }: ResumenTota
               </div>
             ))}
           </div>
+          {esRotativo && (
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Nota: El domingo calendario no genera recargo dominical en jornadas rotativas.
+            </p>
+          )}
           {totalDominicales.length > 0 && (
             <p className="mt-2 text-center text-xs font-medium text-rose-600 dark:text-rose-400">
               Total dominicales/festivas:{' '}

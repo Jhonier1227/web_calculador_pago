@@ -168,7 +168,7 @@ export function calcularPeriodo(
 
     const resultado = calcularTurno(
       salarioMensual, jornadaPactada, turno, undefined,
-      acumuladorLV,
+      acumuladorLV, bloque.tipoJornada, bloque.diaDescanso,
     );
 
     totalAPagar += resultado.totalPagar;
@@ -189,6 +189,8 @@ export function calcularPeriodo(
         esDomingo,
         esFestivo: nombre !== null,
         nombreFestivo: nombre,
+        tipoJornada: bloque.tipoJornada,
+        diaDescanso: bloque.diaDescanso,
       };
       for (const r of resultado.resumenPorTipo) {
         if (r.tipoHora === 'RECARGO_DOMINICAL_DIURNO' || r.tipoHora === 'RECARGO_DOMINICAL_NOCTURNO' ||

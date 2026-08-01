@@ -335,6 +335,7 @@ describe('calcularTurno — casos end-to-end', () => {
           4: { inicio: '06:00', fin: '14:00' },
           5: { inicio: '06:00', fin: '14:00' },
         },
+        tipoJornada: 'estandar', diaDescanso: 0,
       }],
     };
     const r = calcularPeriodo(CONSTANTES_2026.SALARIO_MINIMO, jornada8_17, config);
@@ -365,6 +366,7 @@ describe('calcularTurno — casos end-to-end', () => {
           4: { inicio: '06:00', fin: '14:00' },
           5: { inicio: '06:00', fin: '14:00' },
         },
+        tipoJornada: 'estandar', diaDescanso: 0,
       }],
     };
     const r = calcularPeriodo(CONSTANTES_2026.SALARIO_MINIMO, j, config);
@@ -383,6 +385,7 @@ describe('calcularTurno — casos end-to-end', () => {
       bloques: [{
         id: 'b1', fechaInicio: '2026-07-20', fechaFin: '2026-07-20',
         horariosPorDia: { 1: { inicio: '08:00', fin: '16:00' } },
+        tipoJornada: 'estandar', diaDescanso: 0,
       }],
     };
     const r = calcularPeriodo(CONSTANTES_2026.SALARIO_MINIMO, j, config);
@@ -403,6 +406,7 @@ describe('calcularTurno — casos end-to-end', () => {
       bloques: [{
         id: 'b1', fechaInicio: '2026-07-19', fechaFin: '2026-07-19',
         horariosPorDia: { 7: { inicio: '08:00', fin: '16:00' } },
+        tipoJornada: 'estandar', diaDescanso: 0,
       }],
     };
     const r = calcularPeriodo(CONSTANTES_2026.SALARIO_MINIMO, jornadaLV, config);
@@ -421,6 +425,8 @@ describe('calcularTurno — casos end-to-end', () => {
       esDomingo: true,
       esFestivo: true,
       nombreFestivo: 'Navidad',
+      tipoJornada: 'estandar',
+      diaDescanso: 0,
     };
     expect(motivo.esDomingo).toBe(true);
     expect(motivo.esFestivo).toBe(true);
@@ -455,6 +461,7 @@ describe('calcularTurno — casos end-to-end', () => {
           5: { inicio: '06:00', fin: '14:00' },
           6: { inicio: '08:00', fin: '16:00' },
         },
+        tipoJornada: 'estandar', diaDescanso: 0,
       }],
     };
     const r = calcularPeriodo(CONSTANTES_2026.SALARIO_MINIMO, j, config);

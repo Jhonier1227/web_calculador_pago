@@ -70,6 +70,8 @@ export interface MotivoRecargoDominical {
   esDomingo: boolean;
   esFestivo: boolean;
   nombreFestivo: string | null;
+  tipoJornada: 'estandar' | 'rotativo';
+  diaDescanso: number;
 }
 
 export interface DetalleDominicalFestivo {
@@ -105,6 +107,8 @@ export interface BloqueHorario {
   fechaInicio: string;
   fechaFin: string;
   horariosPorDia: Record<number, { inicio: string; fin: string }>;
+  tipoJornada: 'estandar' | 'rotativo';
+  diaDescanso: number;
 }
 
 export interface ConfiguracionPeriodo {

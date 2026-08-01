@@ -16,6 +16,12 @@ interface FormularioTurnoProps {
   turno: Turno;
   onCalcular: () => void;
   jornadaValida: boolean;
+  minutosDescanso: number;
+  onMinutosDescansoChange: (v: number) => void;
+  tipoJornada: 'estandar' | 'rotativo';
+  onTipoJornadaChange: (v: 'estandar' | 'rotativo') => void;
+  diaDescanso: number;
+  onDiaDescansoChange: (v: number) => void;
 }
 
 export function FormularioTurno({
@@ -28,6 +34,12 @@ export function FormularioTurno({
   turno,
   onCalcular,
   jornadaValida,
+  minutosDescanso,
+  onMinutosDescansoChange,
+  tipoJornada,
+  onTipoJornadaChange,
+  diaDescanso,
+  onDiaDescansoChange,
 }: FormularioTurnoProps) {
   const errores = useMemo(() => validarTurno(turno), [turno]);
   const erroresBloqueantes = errores.filter((a) => a.severidad === 'error');
@@ -114,6 +126,86 @@ export function FormularioTurno({
             Añadir franja
           </Button>
         )}
+      </div>
+
+      {/* Selector de tipo de jornada */}
+      <div className="mb-4 flex flex-col gap-2">
+        <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+          Tipo de jornada
+        </label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onTipoJornadaChange('estandar')}
+            className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-all ${
+              tipoJornada === 'estandar'
+                ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                : 'border-slate-300 bg-white text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'
+            }`}
+          >
+            Jornada estándar
+            <span className="mt-0.5 block text-xs opacity-60">Descanso el domingo</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onTipoJornadaChange('rotativo')}
+            className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-all ${
+              tipoJornada === 'rotativo'
+                ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                : 'border-slate-300 bg-white text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'
+            }`}
+          >
+            Turno rotativo
+            <span className="mt-0.5 block text-xs opacity-60">Elegir día de descanso</span>
+          </button>
+        </div>
+        {tipoJornada === 'rotativo' && (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="dia-descanso-turno" className="text-xs text-slate-400">
+              ¿Cuál es tu día de descanso semanal?
+            </label>
+            <select
+              id="dia-descanso-turno"
+              value={diaDescanso}
+              onChange={(e) => onDiaDescansoChange(Number(e.target.value))}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            >
+              <option value={0}>Domingo</option>
+              <option value={1}>Lunes</option>
+              <option value={2}>Martes</option>
+              <option value={3}>Miércoles</option>
+              <option value={4}>Jueves</option>
+              <option value={5}>Viernes</option>
+              <option value={6}>Sábado</option>
+            </select>
+          </div>
+        )}
+        <p className="text-xs text-slate-500">
+          El recargo dominical aplica sobre el día de descanso obligatorio pactado, no necesariamente el domingo (Art. 179 CST).
+        </p>
+      </div>
+
+      {/* Campo de descanso */}
+      <div className="mb-4 flex flex-col gap-1">
+        <label htmlFor="descanso-turno" className="text-sm font-medium text-slate-600 dark:text-slate-300">
+          Descanso (almuerzo u otro)
+        </label>
+        <select
+          id="descanso-turno"
+          value={minutosDescanso}
+          onChange={(e) => onMinutosDescansoChange(Number(e.target.value))}
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+        >
+          <option value={0}>Sin descanso (0 min)</option>
+          <option value={15}>15 minutos</option>
+          <option value={30}>30 minutos</option>
+          <option value={45}>45 minutos</option>
+          <option value={60}>1 hora (60 min)</option>
+          <option value={90}>1 hora 30 min (90 min)</option>
+        </select>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Se descuenta del total trabajado — Art. 167 CST
+        </p>
       </div>
 
       {erroresBloqueantes.map((e, i) => (

@@ -27,12 +27,33 @@ function defaultBloque(inicio: string, fin: string): BloqueHorario {
       4: { inicio: '08:00', fin: '17:00' },
       5: { inicio: '08:00', fin: '17:00' },
     },
+    tipoJornada: 'estandar',
+    diaDescanso: 0,
   };
 }
 
 function calcFinMes(inicio: string): string {
   const [y, m] = inicio.split('-').map(Number);
   return `${y}-${String(m).padStart(2, '0')}-${new Date(y, m, 0).getDate()}`;
+}
+
+function ajustarHorario(horario: { inicio: string; fin: string }, minutosDescanso: number): { inicio: string; fin: string } {
+  if (minutosDescanso === 0) return horario;
+  const [hFin, mFin] = horario.fin.split(':').map(Number);
+  const totalMinutos = hFin * 60 + mFin - minutosDescanso;
+  if (totalMinutos < 0) return horario;
+  const horas = Math.floor(totalMinutos / 60);
+  const minutos = totalMinutos % 60;
+  return { ...horario, fin: `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}` };
+}
+
+function ajustarBloque(bloque: BloqueHorario, minutosDescanso: number): BloqueHorario {
+  if (minutosDescanso === 0) return bloque;
+  const horariosPorDia: Record<number, { inicio: string; fin: string }> = {};
+  for (const [dia, horario] of Object.entries(bloque.horariosPorDia)) {
+    horariosPorDia[Number(dia)] = ajustarHorario(horario, minutosDescanso);
+  }
+  return { ...bloque, horariosPorDia };
 }
 
 interface FormularioPeriodoProps {
@@ -44,6 +65,7 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
   const [fechaInicio, setFechaInicio] = useState(today);
   const [fechaFin, setFechaFin] = useState(calcFinMes(today));
   const [bloques, setBloques] = useState<BloqueHorario[]>(() => [defaultBloque(today, calcFinMes(today))]);
+  const [descansoPorBloque, setDescansoPorBloque] = useState<number[]>([0]);
 
   const toggleDia = (bloqueIndex: number, d: number) => {
     setBloques((prev) =>
@@ -78,19 +100,43 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
     );
   };
 
+  const updateTipoJornadaBloque = (bloqueIndex: number, tipoJornada: 'estandar' | 'rotativo') => {
+    setBloques((prev) =>
+      prev.map((b, i) =>
+        i === bloqueIndex ? { ...b, tipoJornada, diaDescanso: tipoJornada === 'estandar' ? 0 : b.diaDescanso } : b,
+      ),
+    );
+  };
+
+  const updateDiaDescansoBloque = (bloqueIndex: number, diaDescanso: number) => {
+    setBloques((prev) =>
+      prev.map((b, i) => (i === bloqueIndex ? { ...b, diaDescanso } : b)),
+    );
+  };
+
+  const updateDescansoBloque = (bloqueIndex: number, valor: number) => {
+    setDescansoPorBloque((prev) =>
+      prev.map((v, i) => (i === bloqueIndex ? valor : v)),
+    );
+  };
+
   const agregarBloque = () => {
     setBloques((prev) => {
       const ultimo = prev[prev.length - 1];
       const nuevo = defaultBloque(fechaInicio, fechaFin);
       if (ultimo) {
         nuevo.horariosPorDia = { ...ultimo.horariosPorDia };
+        nuevo.tipoJornada = ultimo.tipoJornada;
+        nuevo.diaDescanso = ultimo.diaDescanso;
       }
       return [...prev, nuevo];
     });
+    setDescansoPorBloque((prev) => [...prev, 0]);
   };
 
   const eliminarBloque = (bloqueIndex: number) => {
     setBloques((prev) => prev.filter((_, i) => i !== bloqueIndex));
+    setDescansoPorBloque((prev) => prev.filter((_, i) => i !== bloqueIndex));
   };
 
   const config: ConfiguracionPeriodo = useMemo(
@@ -105,7 +151,8 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
 
   const handleCalcular = () => {
     if (!puedeCalcular) return;
-    onCalcular(config);
+    const bloquesAjustados = bloques.map((b, i) => ajustarBloque(b, descansoPorBloque[i] ?? 0));
+    onCalcular({ fechaInicio, fechaFin, bloques: bloquesAjustados });
   };
 
   return (
@@ -199,6 +246,63 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
               </div>
             </div>
 
+            {/* Selector de tipo de jornada */}
+            <div className="mb-4 flex flex-col gap-2">
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                Tipo de jornada
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateTipoJornadaBloque(i, 'estandar')}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-all ${
+                    bloque.tipoJornada === 'estandar'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                      : 'border-slate-300 bg-white text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'
+                  }`}
+                >
+                  Jornada estándar
+                  <span className="mt-0.5 block text-xs opacity-60">Descanso el domingo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateTipoJornadaBloque(i, 'rotativo')}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-all ${
+                    bloque.tipoJornada === 'rotativo'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                      : 'border-slate-300 bg-white text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'
+                  }`}
+                >
+                  Turno rotativo
+                  <span className="mt-0.5 block text-xs opacity-60">Elegir día de descanso</span>
+                </button>
+              </div>
+              {bloque.tipoJornada === 'rotativo' && (
+                <div className="flex flex-col gap-1">
+                  <label htmlFor={`dia-descanso-${i}`} className="text-xs text-slate-400">
+                    ¿Cuál es tu día de descanso semanal?
+                  </label>
+                  <select
+                    id={`dia-descanso-${i}`}
+                    value={bloque.diaDescanso}
+                    onChange={(e) => updateDiaDescansoBloque(i, Number(e.target.value))}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    <option value={0}>Domingo</option>
+                    <option value={1}>Lunes</option>
+                    <option value={2}>Martes</option>
+                    <option value={3}>Miércoles</option>
+                    <option value={4}>Jueves</option>
+                    <option value={5}>Viernes</option>
+                    <option value={6}>Sábado</option>
+                  </select>
+                </div>
+              )}
+              <p className="text-xs text-slate-500">
+                El recargo dominical aplica sobre el día de descanso obligatorio pactado, no necesariamente el domingo (Art. 179 CST).
+              </p>
+            </div>
+
             <div className="mb-2 flex flex-wrap gap-1.5">
               {[1, 2, 3, 4, 5, 6, 7].map((d) => {
                 const activo = !!bloque.horariosPorDia[d];
@@ -246,6 +350,26 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
                 </div>
               );
             })}
+
+            {/* Descanso por bloque */}
+            <div className="mt-3 flex flex-col gap-1">
+              <label htmlFor={`descanso-bloque-${i}`} className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Descanso (almuerzo u otro)
+              </label>
+              <select
+                id={`descanso-bloque-${i}`}
+                value={descansoPorBloque[i] ?? 0}
+                onChange={(e) => updateDescansoBloque(i, Number(e.target.value))}
+                className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              >
+                <option value={0}>Sin descanso (0 min)</option>
+                <option value={15}>15 minutos</option>
+                <option value={30}>30 minutos</option>
+                <option value={45}>45 minutos</option>
+                <option value={60}>1 hora (60 min)</option>
+                <option value={90}>1 hora 30 min (90 min)</option>
+              </select>
+            </div>
           </div>
         ))}
 

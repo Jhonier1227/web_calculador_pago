@@ -22,7 +22,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -41,7 +47,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -62,7 +74,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -83,7 +101,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -102,7 +126,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -127,7 +157,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={{ fecha: defaultTurno.fecha, franjas }}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -147,7 +183,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -168,7 +210,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={{ fecha: defaultTurno.fecha, franjas }}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -187,7 +235,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -205,7 +259,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={false}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -223,7 +283,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -243,7 +309,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={defaultTurno}
         onCalcular={onCalcular}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 
@@ -265,7 +337,13 @@ describe('FormularioTurno', () => {
         onEliminarFranja={vi.fn()}
         turno={turno}
         onCalcular={vi.fn()}
+        minutosDescanso={0}
+        onMinutosDescansoChange={vi.fn()}
         jornadaValida={true}
+        tipoJornada={'estandar'}
+        onTipoJornadaChange={vi.fn()}
+        diaDescanso={0}
+        onDiaDescansoChange={vi.fn()}
       />,
     );
 

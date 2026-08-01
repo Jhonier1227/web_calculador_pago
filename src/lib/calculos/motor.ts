@@ -14,12 +14,26 @@ import {
 } from './utilidades';
 import { clasificarHora, estaDentroDeJornada, esDiaLaboralHabitual } from './clasificacion';
 
+function esDiaConRecargoDominical(
+  fecha: Date,
+  diaDescanso: number,
+  tipoJornada: 'estandar' | 'rotativo',
+): boolean {
+  const diaSemana = fecha.getDay();
+  if (tipoJornada === 'estandar') {
+    return diaSemana === 0;
+  }
+  return diaSemana === diaDescanso;
+}
+
 export function calcularTurno(
   salarioMensual: number,
   jornadaPactada: JornadaPactada,
   turno: Turno,
   auxilioTransporte?: number,
   horasAcumuladasLV?: number,
+  tipoJornada?: 'estandar' | 'rotativo',
+  diaDescanso?: number,
 ): ResultadoCalculo {
   const advertencias: Advertencia[] = [];
 
@@ -75,8 +89,9 @@ export function calcularTurno(
   const desgloseHoras: HoraCalculada[] = [];
 
   for (const hora of horas) {
-    const esDomingo = hora.getDay() === 0;
-    const esFestivoReal = esFestivo(hora) || (esDomingo && !esDiaLaboralHabitual(hora, jornadaPactada));
+    const diaDescansoEfectivo = tipoJornada === 'rotativo' ? (diaDescanso ?? 0) : 0;
+    const esDiaDescanso = esDiaConRecargoDominical(hora, diaDescansoEfectivo, tipoJornada ?? 'estandar');
+    const esFestivoReal = esFestivo(hora) || (esDiaDescanso && !esDiaLaboralHabitual(hora, jornadaPactada));
     const esNocturna = esHoraNocturna(hora);
     let dentroDeJornada = estaDentroDeJornada(hora, jornadaPactada);
     // Acumulador semanal (solo aplica en contexto de período con calcularPeriodo):

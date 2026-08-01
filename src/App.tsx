@@ -28,6 +28,16 @@ const ORDEN_TABS: Record<Seccion, number> = {
   calculadora: 2,
 } as const;
 
+function ajustarFranja(franja: { inicio: string; fin: string }, minutosDescanso: number): { inicio: string; fin: string } {
+  if (minutosDescanso === 0) return franja;
+  const [hFin, mFin] = franja.fin.split(':').map(Number);
+  const totalMinutos = hFin * 60 + mFin - minutosDescanso;
+  if (totalMinutos < 0) return franja;
+  const horas = Math.floor(totalMinutos / 60);
+  const minutos = totalMinutos % 60;
+  return { ...franja, fin: `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}` };
+}
+
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const [seccionActiva, setSeccionActiva] = useState<Seccion>('periodo');
@@ -62,7 +72,9 @@ export default function App() {
 
   const formatearSalario = (n: number) => n.toLocaleString('es-CO');
 
-  const handleSalarioFocus = () => setSalarioStr('');
+  const handleSalarioFocus = () => {
+    if (salario === 0) setSalarioStr('');
+  };
 
   const handleSalarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, '');
@@ -100,7 +112,9 @@ export default function App() {
 
   const [auxilio, setAuxilio] = useState(0);
   const [auxilioStr, setAuxilioStr] = useState('0');
-  const handleAuxilioFocus = () => setAuxilioStr('');
+  const handleAuxilioFocus = () => {
+    if (auxilio === 0) setAuxilioStr('');
+  };
 
   const handleAuxilioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, '');
@@ -142,6 +156,9 @@ export default function App() {
     { inicio: '18:00', fin: '22:00' },
   ]);
   const { resultado, error, calcular } = useCalculo();
+  const [minutosDescanso, setMinutosDescanso] = useState(0);
+  const [tipoJornada, setTipoJornada] = useState<'estandar' | 'rotativo'>('estandar');
+  const [diaDescanso, setDiaDescanso] = useState(0);
   const [periodoResultado, setPeriodoResultado] = useState<ResultadoPeriodoType | null>(null);
 
   const toggleDia = useCallback(
@@ -198,9 +215,13 @@ export default function App() {
   const handleCalcular = useCallback(() => {
     const val = validarSalario(salario);
     if (!val.esValido) return;
-    calcular(salario, jornada, turno, auxilio || undefined);
-    trackEvent('calcular', { salario, jornada_dias: dias.length, franjas: franjas.length });
-  }, [calcular, salario, jornada, turno, auxilio, dias, franjas]);
+    const franjasAjustadas = minutosDescanso > 0
+      ? franjas.map((f) => ajustarFranja(f, minutosDescanso))
+      : franjas;
+    const turnoAjustado: Turno = { ...turno, franjas: franjasAjustadas };
+    calcular(salario, jornada, turnoAjustado, auxilio || undefined, tipoJornada, diaDescanso);
+    trackEvent('calcular', { salario, jornada_dias: dias.length, franjas: franjas.length, descanso: minutosDescanso, tipoJornada, diaDescanso });
+  }, [calcular, salario, jornada, turno, auxilio, dias, franjas, minutosDescanso, tipoJornada, diaDescanso]);
 
   const handleCalcularPeriodo = useCallback(
     (config: ConfiguracionPeriodo) => {
@@ -307,6 +328,12 @@ export default function App() {
                   turno={turno}
                   onCalcular={handleCalcular}
                   jornadaValida={jornadaValida}
+                  minutosDescanso={minutosDescanso}
+                  onMinutosDescansoChange={setMinutosDescanso}
+                  tipoJornada={tipoJornada}
+                  onTipoJornadaChange={setTipoJornada}
+                  diaDescanso={diaDescanso}
+                  onDiaDescansoChange={setDiaDescanso}
                 />
 
                 {error && (
@@ -317,6 +344,11 @@ export default function App() {
 
                 {resultado && (
                   <div aria-live="polite" className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                    {minutosDescanso > 0 && (
+                      <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+                        Descuento por descanso aplicado: <strong>{minutosDescanso} min</strong> (Art. 167 CST)
+                      </p>
+                    )}
                     <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
                     <ResumenTotales resumen={resultado.resumenPorTipo} />
                     <DesgloseHoras horas={resultado.desgloseHoras} />
