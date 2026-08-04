@@ -12,7 +12,7 @@ export type {
   SeveridadAdvertencia,
   CodigosAdvertencia,
 } from './tipos';
-export { esFestivo, nombreFestivo } from './festivos';
+export { esFestivo, nombreFestivo, _resetCacheFestivos } from './festivos';
 export {
   redondearCOP,
   parseHora,

@@ -2,6 +2,7 @@ import type { ConfiguracionPeriodo, ResultadoPeriodo, JornadaPactada, Turno, Res
 import { validarJornadaPactada, validarAñoFestivos, diaSemanaJSaISO } from './utilidades';
 import { calcularTurno } from './motor';
 import { nombreFestivo } from './festivos';
+import { LEGAL_LIMITS } from './constantes';
 
 export function validarConfiguracionPeriodo(config: ConfiguracionPeriodo): Advertencia[] {
   const advertencias: Advertencia[] = [];
@@ -17,10 +18,10 @@ export function validarConfiguracionPeriodo(config: ConfiguracionPeriodo): Adver
 
   const diffMs = new Date(config.fechaFin + 'T12:00:00').getTime() - new Date(config.fechaInicio + 'T12:00:00').getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
-  if (diffDays > 31) {
+  if (diffDays > LEGAL_LIMITS.MAX_DIAS_PERIODO) {
     advertencias.push({
       codigo: 'RANGO_EXCEDE_31_DIAS',
-      mensaje: 'El período no puede superar 31 días. Divide el cálculo en dos períodos separados.',
+      mensaje: `El período no puede superar ${LEGAL_LIMITS.MAX_DIAS_PERIODO} días. Divide el cálculo en dos períodos separados.`,
       severidad: 'warning',
     });
   }
@@ -260,6 +261,14 @@ export function calcularPeriodo(
     advertencias.push({
       codigo: 'PERIODO_SIN_DIAS',
       mensaje: 'No se encontraron días trabajados en el período. Revisa la configuración de los bloques.',
+      severidad: 'warning',
+    });
+  }
+
+  if (diasOmitidos > 0) {
+    advertencias.push({
+      codigo: 'DIAS_SIN_BLOQUE',
+      mensaje: `${diasOmitidos} día(s) del período no tienen un bloque de horario asignado y fueron omitidos del cálculo. Agrega más bloques para incluir esos días.`,
       severidad: 'warning',
     });
   }

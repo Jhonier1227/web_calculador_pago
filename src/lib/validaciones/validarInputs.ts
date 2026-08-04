@@ -1,4 +1,4 @@
-import { CONSTANTES_2026 } from '../calculos/constantes';
+import { CONSTANTES_2026, LEGAL_LIMITS } from '../calculos/constantes';
 
 export interface ResultadoValidacion {
   esValido: boolean;
@@ -15,7 +15,7 @@ export function validarSalario(valor: number): ResultadoValidacion {
   if (!Number.isInteger(valor)) {
     return { esValido: false, mensaje: 'El salario debe ser un número entero sin decimales.' };
   }
-  if (valor < 1_000_000) {
+  if (valor < CONSTANTES_2026.SALARIO_MINIMO) {
     return {
       esValido: false,
       mensaje: `El salario ingresado es menor al salario mínimo legal vigente (${CONSTANTES_2026.SALARIO_MINIMO.toLocaleString('es-CO')})`,
@@ -87,10 +87,10 @@ export function validarRangoPeriodo(inicio: Date, fin: Date): ResultadoValidacio
   const diffMs = finNorm.getTime() - inicioNorm.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
 
-  if (diffDays > 31) {
+  if (diffDays > LEGAL_LIMITS.MAX_DIAS_PERIODO) {
     return {
       esValido: false,
-      mensaje: 'El período no puede superar 31 días. Divide el cálculo en dos períodos.',
+      mensaje: `El período no puede superar ${LEGAL_LIMITS.MAX_DIAS_PERIODO} días. Divide el cálculo en dos períodos.`,
     };
   }
 

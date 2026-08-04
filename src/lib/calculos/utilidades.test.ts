@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { diaSemanaJSaISO, esHoraNocturna, validarAñoFestivos, validarJornadaPactada, validarTurno } from './utilidades';
 import { esFestivo, nombreFestivo } from './festivos';
+import { _resetCacheFestivos } from './festivos';
 import type { JornadaPactada, Turno } from './tipos';
 
 function localDate(anio: number, mes: number, dia: number, hora = 12, min = 0): Date {
@@ -53,6 +54,10 @@ describe('validarAñoFestivos', () => {
 });
 
 describe('esFestivo', () => {
+  beforeEach(() => {
+    _resetCacheFestivos();
+  });
+
   it('1 ene (Año Nuevo) es festivo', () => {
     expect(esFestivo(localDate(2026, 0, 1))).toBe(true);
   });

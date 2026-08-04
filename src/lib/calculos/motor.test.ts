@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { calcularTurno } from './motor';
 import { calcularPeriodo } from './periodo';
 import { CONSTANTES_2026 } from './constantes';
 import { TipoHora } from './tipos';
 import type { JornadaPactada, Turno, ConfiguracionPeriodo, MotivoRecargoDominical } from './tipos';
+import { _resetCacheFestivos } from './festivos';
 
 const jornadaLV: JornadaPactada = {
   dias: [1, 2, 3, 4, 5],
@@ -38,6 +39,10 @@ function turnoMulti(fecha: string, franjas: { inicio: string; fin: string }[]): 
 }
 
 describe('calcularTurno — casos end-to-end', () => {
+  beforeEach(() => {
+    _resetCacheFestivos();
+  });
+
   // June 22, 2026 is a regular Monday (no holiday)
   const LUNES = '2026-06-22';
 

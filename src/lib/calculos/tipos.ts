@@ -97,10 +97,14 @@ export type CodigosAdvertencia =
   | 'DIA_INVALIDO'
   | 'PERIODO_SIN_DIAS'
   | 'BLOQUES_SOLAPADOS'
+  | 'DIAS_SIN_BLOQUE'
   | 'RANGO_EXCEDE_31_DIAS'
   | 'BLOQUE_FUERA_RANGO'
   | 'RANGO_FECHA_INVALIDO'
-  | 'AUXILIO_PRORRATEADO';
+  | 'AUXILIO_PRORRATEADO'
+  | 'ADR_OPCIONALIDAD_FRANJAS'
+  | 'LUZ_FRANJAS_MULTIPLES'
+  | 'FRANJA_INVALIDA';
 
 export interface BloqueHorario {
   id: string;

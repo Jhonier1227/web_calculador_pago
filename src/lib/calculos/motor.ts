@@ -94,13 +94,8 @@ export function calcularTurno(
     const esFestivoReal = esFestivo(hora) || (esDiaDescanso && !esDiaLaboralHabitual(hora, jornadaPactada));
     const esNocturna = esHoraNocturna(hora);
     let dentroDeJornada = estaDentroDeJornada(hora, jornadaPactada);
-    // Acumulador semanal (solo aplica en contexto de período con calcularPeriodo):
-    // dentro de las 42h legales → toda hora es ordinaria (Art. 161 CST, Ley 2101)
-    // al superar las 42h → toda hora subsiguiente es extra
     if (horasAcumuladasLV !== undefined) {
-      if (horasAcumuladasLV < CONSTANTES_2026.JORNADA_SEMANAL_HORAS) {
-        dentroDeJornada = true;
-      } else {
+      if (horasAcumuladasLV >= CONSTANTES_2026.JORNADA_SEMANAL_HORAS) {
         dentroDeJornada = false;
       }
       horasAcumuladasLV++;

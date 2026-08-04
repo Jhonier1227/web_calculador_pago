@@ -1,18 +1,12 @@
 // Copyright (c) 2026 Jhonier Stiven Montaño Castillo. Todos los derechos reservados.
 // Uso no autorizado de este código está estrictamente prohibido.
 
-// @ts-expect-error - festivos-colombia no tiene tipos de TypeScript
 import fc from 'festivos-colombia';
+import type { FestivoInfo } from 'festivos-colombia';
 
-interface Festivo {
-  date: string;
-  name: string;
-  'static': boolean;
-}
+const cacheFestivos = new Map<number, FestivoInfo[]>();
 
-const cacheFestivos = new Map<number, Festivo[]>();
-
-function obtenerFestivos(anio: number): Festivo[] {
+function obtenerFestivos(anio: number): FestivoInfo[] {
   if (cacheFestivos.has(anio)) {
     return cacheFestivos.get(anio)!;
   }
@@ -33,6 +27,10 @@ function formatearComoDDMMYYYY(fecha: Date): string {
 
 function fechaValida(fecha: Date): boolean {
   return fecha instanceof Date && !isNaN(fecha.getTime());
+}
+
+export function _resetCacheFestivos(): void {
+  cacheFestivos.clear();
 }
 
 export function esFestivo(fecha: Date): boolean {
