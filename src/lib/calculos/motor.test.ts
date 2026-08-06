@@ -194,9 +194,9 @@ describe('calcularTurno — casos end-to-end', () => {
     }
   });
 
-  it('Advertencia LIMITE_SEMANAL_NO_VALIDADO siempre presente', () => {
+  it('Advertencia LIMITE_SEMANAL_NO_VALIDADO no se genera desde motor.ts (solo desde periodo.ts)', () => {
     const r = calcularTurno(CONSTANTES_2026.SALARIO_MINIMO, jornadaLV, turno(LUNES, '09:00', '13:00'));
-    expect(r.advertencias.some((a) => a.codigo === 'LIMITE_SEMANAL_NO_VALIDADO')).toBe(true);
+    expect(r.advertencias.some((a) => a.codigo === 'LIMITE_SEMANAL_NO_VALIDADO')).toBe(false);
   });
 
   it('Jornada inválida (sin días) retorna error SIN_DIAS_JORNADA', () => {

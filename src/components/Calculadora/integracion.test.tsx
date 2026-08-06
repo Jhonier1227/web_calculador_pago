@@ -30,7 +30,7 @@ describe('Integración: flujo completo jornada + turno → resultados', () => {
       expect(h.esHoraExtra).toBe(false);
     });
     const limiteWarning = resultado.advertencias.filter((a) => a.codigo === 'LIMITE_SEMANAL_NO_VALIDADO');
-    expect(limiteWarning).toHaveLength(1);
+    expect(limiteWarning).toHaveLength(0);
   });
 
   it('turno extra nocturno fuera de jornada → EXTRA_NOCTURNA', () => {

@@ -25,6 +25,8 @@ describe('FormularioJornada', () => {
         onToggleDia={vi.fn()}
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
+        tipoJornada={'estandar'}
+        diaDescanso={0}
       />,
     );
 
@@ -42,6 +44,8 @@ describe('FormularioJornada', () => {
         onToggleDia={vi.fn()}
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
+        tipoJornada={'estandar'}
+        diaDescanso={0}
       />,
     );
 
@@ -64,6 +68,8 @@ describe('FormularioJornada', () => {
         onToggleDia={onToggleDia}
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
+        tipoJornada={'estandar'}
+        diaDescanso={0}
       />,
     );
 
@@ -79,6 +85,8 @@ describe('FormularioJornada', () => {
         onToggleDia={vi.fn()}
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
+        tipoJornada={'estandar'}
+        diaDescanso={0}
       />,
     );
 
@@ -98,6 +106,8 @@ describe('FormularioJornada', () => {
         onToggleDia={vi.fn()}
         onUpdateHorario={onUpdateHorario}
         jornada={defaultJornada}
+        tipoJornada={'estandar'}
+        diaDescanso={0}
       />,
     );
 
@@ -114,6 +124,8 @@ describe('FormularioJornada', () => {
         onToggleDia={vi.fn()}
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
+        tipoJornada={'estandar'}
+        diaDescanso={0}
       />,
     );
 
@@ -130,6 +142,8 @@ describe('FormularioJornada', () => {
         onToggleDia={vi.fn()}
         onUpdateHorario={vi.fn()}
         jornada={{ dias: diasConDomingo, horariosPorDia: defaultHorarios }}
+        tipoJornada={'estandar'}
+        diaDescanso={0}
       />,
     );
 

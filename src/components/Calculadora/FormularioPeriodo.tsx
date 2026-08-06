@@ -6,6 +6,22 @@ import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
 import { PlusIcon, TrashIcon } from '../ui/Icons';
 
+function formatearDiasActivos(horariosPorDia: BloqueHorario['horariosPorDia']): string {
+  const diasActivos = Object.keys(horariosPorDia)
+    .map(Number)
+    .filter((d) => horariosPorDia[d])
+    .sort((a, b) => a - b);
+  if (diasActivos.length === 0) return 'Sin días';
+  if (diasActivos.length === 7) return 'Todos';
+  if (
+    diasActivos.length >= 3 &&
+    diasActivos.every((d, i) => i === 0 || d === diasActivos[i - 1] + 1)
+  ) {
+    return `${diaLabels[diasActivos[0]]}-${diaLabels[diasActivos[diasActivos.length - 1]]}`;
+  }
+  return diasActivos.map((d) => diaLabels[d]).join(', ');
+}
+
 const diaLabels: Record<number, string> = {
   1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom',
 };
@@ -206,8 +222,13 @@ export function FormularioPeriodo({ onCalcular }: FormularioPeriodoProps) {
         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Bloques de horario</p>
         {bloques.map((bloque, i) => (
           <div key={bloque.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/50">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Bloque {i + 1}</span>
+            <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Bloque {i + 1}</span>
+                <span className="text-xs text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 px-2 py-0.5 rounded">
+                  {formatearDiasActivos(bloque.horariosPorDia)}
+                </span>
+              </div>
               <div className="flex items-center gap-2">
                 {bloques.length > 1 && (
                   <button

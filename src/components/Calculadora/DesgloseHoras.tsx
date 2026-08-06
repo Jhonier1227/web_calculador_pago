@@ -35,9 +35,30 @@ export function DesgloseHoras({ horas }: DesgloseHorasProps) {
               <td className="py-1.5 pr-2">
                 <Badge tipo={h.tipoHora} />
               </td>
-              <td className="py-1.5 pr-2 text-slate-500">{h.esNocturna ? '🌙' : ''}</td>
-              <td className="py-1.5 pr-2 text-slate-500">{h.esFestivo ? '🔴' : ''}</td>
-              <td className="py-1.5 pr-2 text-slate-500">{h.dentroDeJornada ? '✔' : ''}</td>
+              <td className="py-1.5 pr-2 text-slate-500">
+                {h.esNocturna && (
+                  <>
+                    <span aria-hidden="true">🌙</span>
+                    <span className="sr-only">Nocturna</span>
+                  </>
+                )}
+              </td>
+              <td className="py-1.5 pr-2 text-slate-500">
+                {h.esFestivo && (
+                  <>
+                    <span aria-hidden="true">🔴</span>
+                    <span className="sr-only">Festivo</span>
+                  </>
+                )}
+              </td>
+              <td className="py-1.5 pr-2 text-slate-500">
+                {h.dentroDeJornada && (
+                  <>
+                    <span aria-hidden="true">✔</span>
+                    <span className="sr-only">Dentro de jornada</span>
+                  </>
+                )}
+              </td>
               <td className="py-1.5 font-mono text-slate-600 dark:text-slate-300">
                 ${h.valorHora.toLocaleString('es-CO')}
               </td>

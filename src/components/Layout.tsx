@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { SunIcon, MoonIcon, ClockIcon, CalendarIcon, CalculatorIcon } from './ui/Icons';
 import { NavBar } from './NavBar';
+import { UpdatePrompt } from './ui/UpdatePrompt';
 import { HojasIzquierda, HojasDerecha, MacetaIzquierda, MacetaDerecha } from './decoracion';
 
 type Seccion = 'turno' | 'periodo' | 'calculadora';
@@ -113,6 +114,7 @@ export function Layout({ children, theme, onToggleTheme, seccionActiva, onCambia
         </aside>
 
         <NavBar activa={seccionActiva} onChange={onCambiarSeccion} />
+        <UpdatePrompt />
       </div>
     </>
   );

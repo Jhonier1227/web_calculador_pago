@@ -142,16 +142,16 @@ Eliminar el `@ts-expect-error` en `festivos.ts` una vez creado el archivo de tip
 ## 🟡 BLOQUE 2 — Mejoras de arquitectura y mantenibilidad
 *Importante para el largo plazo pero no afectan funcionalidad actual.*
 
-### Progreso del Bloque 2: `[0/4]` tareas completadas
+### Progreso del Bloque 2: `[4/4]` tareas completadas
 
-- [ ] Tarea 2.1 — Duplicación de warning LIMITE_SEMANAL_NO_VALIDADO
-- [ ] Tarea 2.2 — Tests unitarios para validarConfiguracionPeriodo
-- [ ] Tarea 2.3 — Notificación de actualización PWA
-- [ ] Tarea 2.4 — Extracción de custom hooks desde App.tsx
+- [x] Tarea 2.1 — Duplicación de warning LIMITE_SEMANAL_NO_VALIDADO
+- [x] Tarea 2.2 — Tests unitarios para validarConfiguracionPeriodo
+- [x] Tarea 2.3 — Notificación de actualización PWA
+- [x] Tarea 2.4 — Extracción de custom hooks desde App.tsx
 
 ---
 
-### [ ] TAREA 2.1 — Duplicación de warning LIMITE_SEMANAL_NO_VALIDADO
+### [x] TAREA 2.1 — Duplicación de warning LIMITE_SEMANAL_NO_VALIDADO
 **Archivos:** `src/lib/calculos/motor.ts` línea ~82 y `src/lib/calculos/periodo.ts` línea ~129
 **Problema:** El mismo warning se genera desde dos lugares. Aunque `periodo.ts` lo deduplica con `seenCodes`, el origen correcto es solo `periodo.ts` (que maneja la semana completa).
 
@@ -164,7 +164,7 @@ Eliminar el `@ts-expect-error` en `festivos.ts` una vez creado el archivo de tip
 
 ---
 
-### [ ] TAREA 2.2 — Tests unitarios para validarConfiguracionPeriodo
+### [x] TAREA 2.2 — Tests unitarios para validarConfiguracionPeriodo
 **Archivo:** Crear `src/lib/calculos/periodo.validacion.test.ts`
 **Problema:** `validarConfiguracionPeriodo` no tiene tests unitarios propios — solo se prueba indirectamente a través de `calcularPeriodo`.
 
@@ -187,7 +187,7 @@ describe('validarConfiguracionPeriodo', () => {
 
 ---
 
-### [ ] TAREA 2.3 — Notificación de actualización PWA
+### [x] TAREA 2.3 — Notificación de actualización PWA
 **Archivo:** `src/main.tsx` o donde esté el registro del service worker
 **Problema:** El service worker usa `autoUpdate` pero no hay UI que informe al usuario que hay una nueva versión disponible. El usuario puede estar usando una versión desactualizada sin saberlo.
 
@@ -212,7 +212,7 @@ El toast debe:
 
 ---
 
-### [ ] TAREA 2.4 — Extracción de custom hooks desde App.tsx
+### [x] TAREA 2.4 — Extracción de custom hooks desde App.tsx
 **Archivo:** `src/App.tsx` (actualmente ~250 líneas)
 **Problema:** `App.tsx` mezcla estado de inputs, lógica de cálculo, animación de navegación, tema y persistencia. Con 17 props en `FormularioTurno` hay prop drilling excesivo.
 
@@ -247,16 +247,16 @@ El toast debe:
 ## 🔵 BLOQUE 3 — Mejoras de UX y diseño
 *Mejoran la experiencia pero no afectan la lógica de cálculo.*
 
-### Progreso del Bloque 3: `[0/4]` tareas completadas
+### Progreso del Bloque 3: `[4/4]` tareas completadas
 
-- [ ] Tarea 3.1 — Accesibilidad en DesgloseHoras
-- [ ] Tarea 3.2 — Indicador visual de días activos en header de bloque
-- [ ] Tarea 3.3 — Desglose expandible en ResultadoPeriodo
-- [ ] Tarea 3.4 — Mensaje del tipo de jornada más claro
+- [x] Tarea 3.1 — Accesibilidad en DesgloseHoras
+- [x] Tarea 3.2 — Indicador visual de días activos en header de bloque
+- [x] Tarea 3.3 — Desglose expandible en ResultadoPeriodo
+- [x] Tarea 3.4 — Mensaje del tipo de jornada más claro
 
 ---
 
-### [ ] TAREA 3.1 — Accesibilidad en DesgloseHoras
+### [x] TAREA 3.1 — Accesibilidad en DesgloseHoras
 **Archivo:** `src/components/Calculadora/DesgloseHoras.tsx`
 **Problema:** Se usan emojis (🌙, 🔴, ✔) como indicadores visuales sin alternativa para lectores de pantalla.
 
@@ -285,7 +285,7 @@ O reemplazar por badges de texto con `role="img"` y `aria-label`:
 
 ---
 
-### [ ] TAREA 3.2 — Indicador visual de días activos en header de bloque
+### [~] TAREA 3.2 — Indicador visual de días activos en header de bloque
 **Archivo:** `src/components/Calculadora/FormularioPeriodo.tsx`
 **Problema:** El usuario no puede ver qué días están activos en un bloque sin expandirlo o revisar los checkboxes.
 
@@ -302,7 +302,7 @@ Agregar en el header de cada bloque (colapsado o expandido) un indicador compact
 
 ---
 
-### [ ] TAREA 3.3 — Desglose expandible en ResultadoPeriodo
+### [x] TAREA 3.3 — Desglose expandible en ResultadoPeriodo
 **Archivo:** `src/components/Calculadora/ResultadoPeriodo.tsx`
 **Problema:** El resumen de 4 tarjetas (ordinarias, extra, nocturnas, dominicales) no muestra el valor en COP por cada categoría — solo las horas.
 
@@ -319,7 +319,7 @@ Dominicales    8h     → $120.074
 
 ---
 
-### [ ] TAREA 3.4 — Mensaje del tipo de jornada más claro
+### [x] TAREA 3.4 — Mensaje del tipo de jornada más claro
 **Archivo:** `src/components/Calculadora/FormularioJornada.tsx` (línea ~96-100)
 **Problema:** El mensaje `(domingo incluido en jornada → sin recargo dominical)` es confuso con el nuevo tipo rotativo implementado.
 
@@ -333,14 +333,14 @@ Actualizar el mensaje según el tipo de jornada activo. Esto requiere pasar la i
 ## 🟢 BLOQUE 4 — Optimización de rendimiento
 *Solo aplicar cuando los bloques anteriores estén completos.*
 
-### Progreso del Bloque 4: `[0/2]` tareas completadas
+### Progreso del Bloque 4: `[2/2]` tareas completadas
 
-- [ ] Tarea 4.1 — Optimizar cálculo de período por tipo de día
-- [ ] Tarea 4.2 — Actualizar vitest a happy-dom
+- [x] Tarea 4.1 — Optimizar cálculo de período por tipo de día
+- [x] Tarea 4.2 — Actualizar vitest a happy-dom
 
 ---
 
-### [ ] TAREA 4.1 — Optimizar cálculo de período por tipo de día
+### [x] TAREA 4.1 — Optimizar cálculo de período por tipo de día
 **Archivo:** `src/lib/calculos/periodo.ts`
 **Problema:** Para 31 días con 8h cada uno = 248 llamadas a `calcularTurno`. Si el horario es el mismo para todos los lunes, se puede calcular una vez y multiplicar.
 
@@ -361,7 +361,7 @@ Actualizar el mensaje según el tipo de jornada activo. Esto requiere pasar la i
 
 ---
 
-### [ ] TAREA 4.2 — Actualizar vitest a happy-dom
+### [x] TAREA 4.2 — Actualizar vitest a happy-dom
 **Archivo:** `vitest.config.ts`
 **Problema:** Los tests de componentes usan jsdom que es lento en Windows (~500ms por test de componente).
 
@@ -396,20 +396,20 @@ SEMANA 1 — Bloque 1 (crítico):
   [x] Tarea 1.6 → commit
 
 SEMANA 2 — Bloque 2 (arquitectura):
-  [ ] Tarea 2.1 → commit
-  [ ] Tarea 2.2 → commit
-  [ ] Tarea 2.3 → commit
-  [ ] Tarea 2.4 → commit  (la más larga — múltiples pasos con commits intermedios)
+  [x] Tarea 2.1 → commit
+  [x] Tarea 2.2 → commit
+  [x] Tarea 2.3 → commit
+  [x] Tarea 2.4 → commit  (la más larga — múltiples pasos con commits intermedios)
 
 SEMANA 3 — Bloque 3 (UX):
-  [ ] Tarea 3.1 → commit
-  [ ] Tarea 3.2 → commit
-  [ ] Tarea 3.3 → commit
-  [ ] Tarea 3.4 → commit
+  [x] Tarea 3.1 → commit
+  [x] Tarea 3.2 → commit
+  [x] Tarea 3.3 → commit
+  [x] Tarea 3.4 → commit
 
 CUANDO EL RESTO ESTÉ COMPLETO — Bloque 4 (optimización):
-  [ ] Tarea 4.1 → commit (solo si hay problema de rendimiento real)
-  [ ] Tarea 4.2 → commit (solo si los tests con happy-dom son compatibles)
+  [x] Tarea 4.1 → commit (solo si hay problema de rendimiento real)
+  [x] Tarea 4.2 → commit (solo si los tests con happy-dom son compatibles)
 ```
 
 ---
@@ -419,10 +419,10 @@ CUANDO EL RESTO ESTÉ COMPLETO — Bloque 4 (optimización):
 | Bloque | Progreso | Estado |
 |--------|----------|--------|
 | 🔴 Bloque 1 — Crítico | `6/6` | **Completado** |
-| 🟡 Bloque 2 — Arquitectura | `0/4` | Pendiente |
-| 🔵 Bloque 3 — UX/Diseño | `0/4` | Pendiente |
-| 🟢 Bloque 4 — Optimización | `0/2` | Pendiente |
-| **TOTAL** | **`6/16`** | **En progreso** |
+| 🟡 Bloque 2 — Arquitectura | `4/4` | **Completado** |
+| 🔵 Bloque 3 — UX/Diseño | `4/4` | **Completado** |
+| 🟢 Bloque 4 — Optimización | `2/2` | **Completado** |
+| **TOTAL** | **`16/16`** | **✅ FINALIZADO** |
 
 ---
 

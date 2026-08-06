@@ -13,9 +13,11 @@ interface FormularioJornadaProps {
   onToggleDia: (d: number) => void;
   onUpdateHorario: (dia: number, campo: 'inicio' | 'fin', valor: string) => void;
   jornada: JornadaPactada;
+  tipoJornada: 'estandar' | 'rotativo';
+  diaDescanso: number;
 }
 
-export function FormularioJornada({ dias, horarios, onToggleDia, onUpdateHorario, jornada }: FormularioJornadaProps) {
+export function FormularioJornada({ dias, horarios, onToggleDia, onUpdateHorario, jornada, tipoJornada, diaDescanso }: FormularioJornadaProps) {
   const errores = useMemo(() => validarJornadaPactada(jornada), [jornada]);
   const erroresBloqueantes = errores.filter((a) => a.severidad === 'error');
   const warnings = errores.filter((a) => a.severidad === 'warning');
@@ -95,7 +97,14 @@ export function FormularioJornada({ dias, horarios, onToggleDia, onUpdateHorario
             </span>
             {dias.some((d) => d === 7) && (
               <span className="ml-2 text-emerald-600 dark:text-emerald-500">
-                (domingo incluido en jornada → sin recargo dominical)
+                {tipoJornada === 'estandar'
+                  ? '(domingo incluido en jornada → sin recargo dominical)'
+                  : `(descanso pactado: ${diaLabels[diaDescanso]} → domingo es día hábil ordinario)`}
+              </span>
+            )}
+            {dias.some((d) => d === diaDescanso) && tipoJornada === 'rotativo' && diaDescanso !== 7 && (
+              <span className="ml-2 text-emerald-600 dark:text-emerald-500">
+                ({diaLabels[diaDescanso]} incluido en jornada → sin recargo por descanso obligatorio)
               </span>
             )}
           </p>

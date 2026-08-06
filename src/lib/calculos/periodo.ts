@@ -1,7 +1,7 @@
 import type { ConfiguracionPeriodo, ResultadoPeriodo, JornadaPactada, Turno, ResumenTipo, Advertencia, TipoHora, DetalleDominicalFestivo, MotivoRecargoDominical } from './tipos';
 import { validarJornadaPactada, validarAñoFestivos, diaSemanaJSaISO } from './utilidades';
 import { calcularTurno } from './motor';
-import { nombreFestivo } from './festivos';
+import { nombreFestivo, esFestivo } from './festivos';
 import { LEGAL_LIMITS } from './constantes';
 
 export function validarConfiguracionPeriodo(config: ConfiguracionPeriodo): Advertencia[] {
@@ -137,6 +137,17 @@ export function calcularPeriodo(
   current.setHours(0, 0, 0, 0);
   const fin = new Date(y2, m2 - 1, d2);
   fin.setHours(0, 0, 0, 0);
+
+  // Pre-calculate festivos for the entire period for faster lookup
+  const festivosEnPeriodo = new Set<string>();
+  let checkDate = new Date(current);
+  while (checkDate <= fin) {
+    if (esFestivo(checkDate)) {
+      const key = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+      festivosEnPeriodo.add(key);
+    }
+    checkDate.setDate(checkDate.getDate() + 1);
+  }
 
   while (current <= fin) {
     const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;

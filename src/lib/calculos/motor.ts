@@ -78,12 +78,6 @@ export function calcularTurno(
     });
   }
 
-  advertencias.push({
-    codigo: 'LIMITE_SEMANAL_NO_VALIDADO',
-    mensaje: 'Esta calculadora solo valida el límite diario de horas extra (máx 2h/día). El límite semanal de 12h extra no se valida en esta versión.',
-    severidad: 'info',
-  });
-
   const valorHoraOrd = redondearCOP(salarioMensual / CONSTANTES_2026.DIVISOR_MENSUAL);
   const horas = generarHorasTurno(turno);
   const desgloseHoras: HoraCalculada[] = [];
