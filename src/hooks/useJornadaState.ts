@@ -37,7 +37,10 @@ export function useJornadaState() {
 
   // Tipo de jornada
   const [tipoJornada, setTipoJornada] = useState<'estandar' | 'rotativo'>('estandar');
-  const [diaDescanso, setDiaDescanso] = useState(0);
+  const [diasDescanso, setDiasDescanso] = useState<number[]>([0]);
+
+  // Horas diarias pactadas (opcional)
+  const [horasPactadasDiarias, setHorasPactadasDiarias] = useState<number | ''>('');
 
   // Descanso
   const [minutosDescanso, setMinutosDescanso] = useState(0);
@@ -209,8 +212,11 @@ export function useJornadaState() {
     // Tipo jornada
     tipoJornada,
     setTipoJornada,
-    diaDescanso,
-    setDiaDescanso,
+    diasDescanso,
+    setDiasDescanso,
+    // Horas diarias pactadas
+    horasPactadasDiarias,
+    setHorasPactadasDiarias,
     // Descanso
     minutosDescanso,
     setMinutosDescanso,

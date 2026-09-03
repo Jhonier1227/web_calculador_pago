@@ -30,7 +30,8 @@ function formatoRecargoLabel(bloque: DetalleDominicalFestivo): string {
     return `Festivo · ${bloque.motivo.nombreFestivo}`;
   }
   if (bloque.motivo.tipoJornada === 'rotativo') {
-    return `Descanso obligatorio (${diaLabels[bloque.motivo.diaDescanso] ?? 'Domingo'})`;
+    const dias = bloque.motivo.diasDescanso;
+    return `Descanso obligatorio (${dias.map(d => diaLabels[d]).join(' y ')})`;
   }
   return 'Domingo';
 }

@@ -1,5 +1,6 @@
 import type { ResultadoPeriodo as ResultadoPeriodoType, ResumenTipo } from '../../lib/calculos/index';
 import { ResumenTotales } from './ResumenTotales';
+import { TotalPagar } from './TotalPagar';
 import { Advertencias } from './Advertencias';
 import { Alert } from '../ui/Alert';
 import { useState } from 'react';
@@ -71,36 +72,15 @@ export function ResultadoPeriodo({ resultado }: ResultadoPeriodoProps) {
         </div>
       ) : (
         <>
-          <div className="text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Total recargos y horas extra del período</p>
-            <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
-              ${resultado.totalAPagar.toLocaleString('es-CO')}
-            </p>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Ordinarias</p>
-              <p className="text-lg font-bold text-slate-700 dark:text-slate-200">{resultado.totalHorasOrdinarias}h</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Extra</p>
-              <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{resultado.totalHorasExtras}h</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Nocturnas</p>
-              <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{resultado.totalHorasNocturnas}h</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Dominicales/Festivas</p>
-              <p className="text-lg font-bold text-rose-600 dark:text-rose-400">{resultado.totalHorasDominicalesFestivas}h</p>
-            </div>
-          </div>
-
-          <div className="mt-3 flex justify-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-            <span>Días calculados: <strong className="text-slate-700 dark:text-slate-200">{resultado.diasCalculados}</strong></span>
-            <span>Días omitidos: <strong className="text-slate-700 dark:text-slate-200">{resultado.diasOmitidos}</strong></span>
-          </div>
+          <TotalPagar
+            totalRecargos={resultado.totalRecargos}
+            totalReferencial={resultado.totalReferencial}
+            auxilioTransporte={resultado.auxilioTransporte}
+            horasOrdinarias={resultado.totalHorasOrdinarias}
+            horasExtra={resultado.totalHorasExtras}
+            horasNocturnas={resultado.totalHorasNocturnas}
+            horasDominicalesFestivas={resultado.totalHorasDominicalesFestivas}
+          />
 
           <ResumenDetallado resumen={resultado.resumenPorTipo} />
 

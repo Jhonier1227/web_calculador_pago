@@ -55,10 +55,12 @@ export default function App() {
     turno,
     tipoJornada,
     setTipoJornada,
-    diaDescanso,
-    setDiaDescanso,
+    diasDescanso,
+    setDiasDescanso,
     minutosDescanso,
     setMinutosDescanso,
+    horasPactadasDiarias,
+    setHorasPactadasDiarias,
   } = jornadaState;
 
   const calculoState = useCalculoState(
@@ -67,7 +69,9 @@ export default function App() {
     auxilio,
     turno,
     tipoJornada,
-    diaDescanso
+    diasDescanso,
+    horasPactadasDiarias,
+    minutosDescanso
   );
   const { resultado, error, periodoResultado, handleCalcular, handleCalcularPeriodo } = calculoState;
 
@@ -147,7 +151,11 @@ export default function App() {
           onUpdateHorario={updateHorario}
           jornada={jornada}
           tipoJornada={tipoJornada}
-          diaDescanso={diaDescanso}
+          diasDescanso={diasDescanso}
+          minutosDescanso={minutosDescanso}
+          onMinutosDescansoChange={setMinutosDescanso}
+          horasPactadasDiarias={horasPactadasDiarias}
+          onHorasPactadasDiariasChange={setHorasPactadasDiarias}
         />
 
         {/* Contenedor del slide — solo contenido específico de sección */}
@@ -178,8 +186,8 @@ export default function App() {
                   onMinutosDescansoChange={setMinutosDescanso}
                   tipoJornada={tipoJornada}
                   onTipoJornadaChange={setTipoJornada}
-                  diaDescanso={diaDescanso}
-                  onDiaDescansoChange={setDiaDescanso}
+                  diasDescanso={diasDescanso}
+                  onDiasDescansoChange={setDiasDescanso}
                 />
 
                 {error && (
@@ -195,7 +203,15 @@ export default function App() {
                         Descuento por descanso aplicado: <strong>{minutosDescanso} min</strong> (Art. 167 CST)
                       </p>
                     )}
-                    <TotalPagar total={resultado.totalPagar} auxilioTransporte={auxilio || undefined} />
+                    <TotalPagar
+                      totalRecargos={resultado.totalRecargos}
+                      totalReferencial={resultado.totalReferencial}
+                      auxilioTransporte={resultado.auxilioTransporte}
+                      horasOrdinarias={resultado.horasOrdinarias}
+                      horasExtra={resultado.horasExtra}
+                      horasNocturnas={resultado.horasNocturnas}
+                      horasDominicalesFestivas={resultado.horasDominicalesFestivas}
+                    />
                     <ResumenTotales resumen={resultado.resumenPorTipo} />
                     <DesgloseHoras horas={resultado.desgloseHoras} />
                     <Advertencias advertencias={resultado.advertencias} />
