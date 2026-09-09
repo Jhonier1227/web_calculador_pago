@@ -6,7 +6,7 @@ interface UseCalculoReturn {
   resultado: ResultadoCalculo | null;
   error: string | null;
   loading: boolean;
-  calcular: (salario: number, jornada: JornadaPactada, turno: Turno, auxilio?: number, tipoJornada?: 'estandar' | 'rotativo', diaDescanso?: number) => void;
+  calcular: (salario: number, jornada: JornadaPactada, turno: Turno, auxilio?: number, tipoJornada?: 'estandar' | 'rotativo', diasDescanso?: number[], horasPactadasDiarias?: number | null, minutosDescanso?: number) => void;
   reset: () => void;
 }
 
@@ -16,11 +16,11 @@ export function useCalculo(): UseCalculoReturn {
   const [loading, setLoading] = useState(false);
 
   const calcular = useCallback(
-    (salario: number, jornada: JornadaPactada, turno: Turno, auxilio?: number, tipoJornada?: 'estandar' | 'rotativo', diaDescanso?: number) => {
+    (salario: number, jornada: JornadaPactada, turno: Turno, auxilio?: number, tipoJornada?: 'estandar' | 'rotativo', diasDescanso?: number[], horasPactadasDiarias?: number | null, minutosDescanso?: number) => {
       setLoading(true);
       setError(null);
       try {
-        const res = calcularTurno(salario, jornada, turno, auxilio, undefined, tipoJornada, diaDescanso);
+        const res = calcularTurno(salario, jornada, turno, auxilio, undefined, tipoJornada, diasDescanso, horasPactadasDiarias === null ? undefined : horasPactadasDiarias, minutosDescanso);
         setResultado(res);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Error inesperado al calcular');

@@ -14,39 +14,164 @@ export function horaANumero(horas: number, minutos: number): number {
   return horas + minutos / 60;
 }
 
-export function esHoraNocturna(fecha: Date): boolean {
-  const h = fecha.getHours();
-  return h >= CONSTANTES_2026.HORA_FIN_DIURNA || h < CONSTANTES_2026.HORA_INICIO_DIURNA;
+/**
+ * Convierte "HH:MM" a minutos desde medianoche.
+ */
+export function horaAMinutos(hora: string): number {
+  const [h, m] = hora.split(':').map(Number);
+  return h * 60 + m;
+}
+
+/**
+ * Calcula la duración efectiva de un turno en MINUTOS.
+ *
+ * Regla fundamental: una hora de trabajo es un INTERVALO entre dos puntos,
+ * no un punto en el tiempo. El punto de inicio no representa tiempo trabajado.
+ *
+ * Ejemplos:
+ *   07:00 → 15:00 = 480 min = 8h (NO 9h)
+ *   07:00 → 17:00, almuerzo 60min = 540 min = 9h efectivos
+ *   07:45 → 17:15, almuerzo 60min = 510 min = 8.5h efectivos
+ *   22:00 → 06:00 (cruza medianoche) = 480 min = 8h
+ *
+ * @param horaInicio - formato "HH:MM" en 24h, ej: "07:00", "22:30"
+ * @param horaFin    - formato "HH:MM" en 24h, puede ser del día siguiente
+ * @param minutosDescanso - minutos de almuerzo/descanso a descontar (default 0)
+ * @returns minutos efectivos trabajados (ya descontado el descanso)
+ */
+export function calcularDuracionEnMinutos(
+  horaInicio: string,
+  horaFin: string,
+  minutosDescanso: number = 0
+): number {
+  const [hIni, mIni] = horaInicio.split(':').map(Number);
+  const [hFin, mFin] = horaFin.split(':').map(Number);
+
+  const minutosInicio = hIni * 60 + mIni;
+  let minutosFin = hFin * 60 + mFin;
+
+  // Si el turno cruza medianoche (fin <= inicio), sumar 24h al fin
+  if (minutosFin <= minutosInicio) {
+    minutosFin += 24 * 60; // 1440 minutos = 24 horas
+  }
+
+  // Duración bruta = diferencia entre intervalos (fin - inicio)
+  // NO se suma +1 porque estamos midiendo intervalos, no contando puntos
+  const minutosBrutos = minutosFin - minutosInicio;
+
+  // Descontar el almuerzo del total bruto
+  const minutosEfectivos = minutosBrutos - minutosDescanso;
+
+  // Nunca retornar negativo (validación debería haberlo capturado antes)
+  return Math.max(0, minutosEfectivos);
+}
+
+/**
+ * Convierte minutos a horas con decimales.
+ * Ej: 510 min → 8.5h, 480 min → 8.0h, 90 min → 1.5h
+ */
+export function minutosAHoras(minutos: number): number {
+  return minutos / 60;
+}
+
+export function esHoraNocturna(hora: number): boolean {
+  return hora >= CONSTANTES_2026.HORA_FIN_DIURNA || hora < CONSTANTES_2026.HORA_INICIO_DIURNA;
 }
 
 export function diaSemanaJSaISO(dia: number): number {
   return dia === 0 ? 7 : dia;
 }
 
-export function generarHorasTurno(turno: Turno): Date[] {
-  const horas: Date[] = [];
+export interface IntervaloTrabajo {
+  horaInicio: Date;
+  horaFin: Date;
+  minutos: number; // minutos efectivos en este intervalo (max 60)
+  horaCalendar: number; // 0-23 hora calendario para clasificación
+}
+
+/**
+ * Genera los intervalos de trabajo de un turno, manejando correctamente:
+ * - Minutos parciales en inicio y fin
+ * - Almuerzo como salto de hora(s) fija(s) a las 12:00 (no resta del total)
+ * - Cruce de medianoche
+ * - Múltiples franjas
+ *
+ * Retorna array de intervalos de trabajo con información para clasificación.
+ */
+export function generarIntervalosTurno(turno: Turno, minutosDescanso: number = 0): IntervaloTrabajo[] {
+  const intervalos: IntervaloTrabajo[] = [];
+  const horasAlmuerzo = Math.floor(minutosDescanso / 60);
+  const horaInicioAlmuerzo = 12; // Almuerzo típico a las 12:00
 
   for (const franja of turno.franjas) {
-    const inicio = new Date(turno.fecha);
-    const { horas: hi, minutos: mi } = parseHora(franja.inicio);
-    inicio.setHours(hi, mi, 0, 0);
+    const inicioMin = horaAMinutos(franja.inicio);
+    let finMin = horaAMinutos(franja.fin);
 
-    const fin = new Date(turno.fecha);
-    const { horas: hf, minutos: mf } = parseHora(franja.fin);
-    fin.setHours(hf, mf, 0, 0);
-
-    if (fin <= inicio) {
-      fin.setDate(fin.getDate() + 1);
+    // Si cruza medianoche
+    if (finMin <= inicioMin) {
+      finMin += 24 * 60;
     }
 
-    let cursor = new Date(inicio);
-    while (cursor < fin && horas.length < LEGAL_LIMITS.MAX_HORAS_TURNO) {
-      horas.push(new Date(cursor));
-      cursor.setHours(cursor.getHours() + 1);
+    // Validar que no sea negativo
+    if (finMin <= inicioMin) {
+      continue; // turno sin tiempo efectivo
+    }
+
+    let minActual = inicioMin;
+
+    while (minActual < finMin) {
+      // Si hay descanso configurado, saltar las horas de almuerzo (empezando a las 12:00)
+      const horaCursor = Math.floor(minActual / 60) % 24;
+      const esHoraAlmuerzo = horasAlmuerzo > 0 && horaCursor >= horaInicioAlmuerzo && horaCursor < horaInicioAlmuerzo + horasAlmuerzo;
+
+      if (esHoraAlmuerzo) {
+        // Saltar la(s) hora(s) de almuerzo
+        minActual += 60;
+        continue;
+      }
+
+      // Calcular el final de esta hora calendar (siguiente hora en punto)
+      const horaCalendar = Math.floor(minActual / 60) % 24;
+      const inicioHoraCalendarMin = Math.floor(minActual / 60) * 60;
+
+      // El bloque termina al menor entre: fin de hora calendar, o fin del turno
+      const finBloqueMin = Math.min(inicioHoraCalendarMin + 60, finMin);
+      const minutosBloque = finBloqueMin - minActual;
+
+      intervalos.push({
+        horaInicio: new Date(
+          new Date(turno.fecha).getFullYear(),
+          new Date(turno.fecha).getMonth(),
+          new Date(turno.fecha).getDate() + Math.floor(minActual / (24 * 60)),
+          Math.floor(minActual / 60) % 24,
+          minActual % 60
+        ),
+        horaFin: new Date(
+          new Date(turno.fecha).getFullYear(),
+          new Date(turno.fecha).getMonth(),
+          new Date(turno.fecha).getDate() + Math.floor((Math.min(Math.floor(minActual / 60) * 60 + 60, finMin)) / (24 * 60)),
+          Math.floor(Math.min(Math.floor(minActual / 60) * 60 + 60, finMin) / 60) % 24,
+          Math.min(Math.floor(minActual / 60) * 60 + 60, finMin) % 60
+        ),
+        minutos: minutosBloque,
+        horaCalendar,
+      });
+
+      minActual = Math.min(Math.floor(minActual / 60) * 60 + 60, finMin);
     }
   }
 
-  return horas;
+  return intervalos;
+}
+
+/**
+ * Wrapper de compatibilidad hacia atrás para generarHorasTurno.
+ * Convierte los intervalos al formato anterior (array de Date en puntos de hora).
+ * @deprecated Usar generarIntervalosTurno para nuevos desarrollos.
+ */
+export function generarHorasTurno(turno: Turno, minutosDescanso: number = 0): Date[] {
+  const intervalos = generarIntervalosTurno(turno, minutosDescanso);
+  return intervalos.map(i => i.horaInicio);
 }
 
 export function validarTurno(turno: Turno): Advertencia[] {

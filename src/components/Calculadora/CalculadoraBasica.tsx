@@ -177,14 +177,13 @@ export function CalculadoraBasica() {
       {/* Pantalla */}
       <div className="mb-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         {operation && (
-          <div className="text-right text-sm text-slate-400 dark:text-slate-500" dir="rtl">
+          <div className="text-right text-sm text-slate-400 dark:text-slate-500">
             {formatearNumero(prevValue)} {operadorTexto[operation]}
           </div>
         )}
         <div
           ref={displayRef}
-          className="min-h-[3rem] overflow-hidden text-3xl font-bold text-slate-800 dark:text-white"
-          dir="rtl"
+          className="min-h-[3rem] overflow-hidden text-right text-3xl font-bold text-slate-800 dark:text-white"
         >
           {display}
         </div>

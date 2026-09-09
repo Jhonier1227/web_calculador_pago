@@ -63,195 +63,217 @@ Call log:
           - generic [ref=e128]:
             - heading "Jornada pactada" [level=2] [ref=e129]
             - paragraph [ref=e130]: Selecciona los días que trabajas habitualmente y tu horario por día.
-            - generic [ref=e131]:
-              - button "Lun" [ref=e132]
-              - button "Mar" [ref=e133]
-              - button "Mié" [ref=e134]
-              - button "Jue" [ref=e135]
-              - button "Vie" [ref=e136]
-              - button "Sáb" [ref=e137]
-              - button "Dom" [ref=e138]
-            - generic [ref=e139]:
-              - generic [ref=e140]: Lun
-              - generic [ref=e141]: Lun inicio
-              - textbox "Lun inicio" [ref=e142]: 08:00
-              - generic [ref=e143]: a
-              - generic [ref=e144]: Lun fin
-              - textbox "Lun fin" [ref=e145]: 17:00
-            - generic [ref=e146]:
-              - generic [ref=e147]: Mar
-              - generic [ref=e148]: Mar inicio
-              - textbox "Mar inicio" [ref=e149]: 08:00
-              - generic [ref=e150]: a
-              - generic [ref=e151]: Mar fin
-              - textbox "Mar fin" [ref=e152]: 17:00
-            - generic [ref=e153]:
-              - generic [ref=e154]: Mié
-              - generic [ref=e155]: Mié inicio
-              - textbox "Mié inicio" [ref=e156]: 08:00
-              - generic [ref=e157]: a
-              - generic [ref=e158]: Mié fin
-              - textbox "Mié fin" [ref=e159]: 17:00
-            - generic [ref=e160]:
-              - generic [ref=e161]: Jue
-              - generic [ref=e162]: Jue inicio
-              - textbox "Jue inicio" [ref=e163]: 08:00
-              - generic [ref=e164]: a
-              - generic [ref=e165]: Jue fin
-              - textbox "Jue fin" [ref=e166]: 17:00
-            - generic [ref=e167]:
-              - generic [ref=e168]: Vie
-              - generic [ref=e169]: Vie inicio
-              - textbox "Vie inicio" [ref=e170]: 08:00
-              - generic [ref=e171]: a
-              - generic [ref=e172]: Vie fin
-              - textbox "Vie fin" [ref=e173]: 17:00
-            - generic [ref=e174]:
-              - alert [ref=e175]:
-                - img [ref=e176]
-                - generic [ref=e178]: La jornada semanal (45h) excede el límite legal de 42 horas.
-              - paragraph [ref=e179]:
-                - text: "Horas/semana:"
-                - generic [ref=e180]: 45h
-          - generic [ref=e183]:
-            - heading "Período a calcular" [level=2] [ref=e184]
-            - generic [ref=e185]:
-              - generic [ref=e186]:
-                - generic [ref=e187]: Fecha de inicio
-                - textbox "Fecha de inicio" [ref=e188]: 2026-07-31
-              - generic [ref=e189]:
-                - generic [ref=e190]: Fecha de fin
-                - textbox "Fecha de fin" [ref=e191]: 2026-07-31
-            - generic [ref=e192]:
-              - paragraph [ref=e193]: Bloques de horario
-              - generic [ref=e194]:
-                - generic [ref=e196]: Bloque 1
-                - generic [ref=e197]:
-                  - generic [ref=e198]:
-                    - generic [ref=e199]: Desde
-                    - textbox "Desde" [ref=e200]: 2026-07-31
-                  - generic [ref=e201]:
-                    - generic [ref=e202]: Hasta
-                    - textbox "Hasta" [ref=e203]: 2026-07-31
-                - generic [ref=e204]:
-                  - generic [ref=e205]: Tipo de jornada
-                  - generic [ref=e206]:
-                    - button "Jornada estándar Descanso el domingo" [ref=e207]:
-                      - text: Jornada estándar
-                      - generic [ref=e208]: Descanso el domingo
-                    - button "Turno rotativo Elegir día de descanso" [ref=e209]:
-                      - text: Turno rotativo
-                      - generic [ref=e210]: Elegir día de descanso
-                  - paragraph [ref=e211]: El recargo dominical aplica sobre el día de descanso obligatorio pactado, no necesariamente el domingo (Art. 179 CST).
-                - generic [ref=e212]:
-                  - button "Lun" [ref=e213]
-                  - button "Mar" [ref=e214]
-                  - button "Mié" [ref=e215]
-                  - button "Jue" [ref=e216]
-                  - button "Vie" [ref=e217]
-                  - button "Sáb" [ref=e218]
-                  - button "Dom" [ref=e219]
+            - generic [ref=e132]:
+              - generic [ref=e133]: ℹ️
+              - paragraph [ref=e134]:
+                - strong [ref=e135]: Referencial.
+                - text: Si tienes un acuerdo escrito con tu empleador de trabajar menos de 8h diarias, indícalo aquí. De lo contrario, se usará el máximo legal de 8h.
+            - generic [ref=e136]:
+              - button "Lun" [ref=e137]
+              - button "Mar" [ref=e138]
+              - button "Mié" [ref=e139]
+              - button "Jue" [ref=e140]
+              - button "Vie" [ref=e141]
+              - button "Sáb" [ref=e142]
+              - button "Dom" [ref=e143]
+            - generic [ref=e144]:
+              - generic [ref=e145]: Lun
+              - generic [ref=e146]: Lun inicio
+              - textbox "Lun inicio" [ref=e147]: 08:00
+              - generic [ref=e148]: a
+              - generic [ref=e149]: Lun fin
+              - textbox "Lun fin" [ref=e150]: 17:00
+            - generic [ref=e151]:
+              - generic [ref=e152]: Mar
+              - generic [ref=e153]: Mar inicio
+              - textbox "Mar inicio" [ref=e154]: 08:00
+              - generic [ref=e155]: a
+              - generic [ref=e156]: Mar fin
+              - textbox "Mar fin" [ref=e157]: 17:00
+            - generic [ref=e158]:
+              - generic [ref=e159]: Mié
+              - generic [ref=e160]: Mié inicio
+              - textbox "Mié inicio" [ref=e161]: 08:00
+              - generic [ref=e162]: a
+              - generic [ref=e163]: Mié fin
+              - textbox "Mié fin" [ref=e164]: 17:00
+            - generic [ref=e165]:
+              - generic [ref=e166]: Jue
+              - generic [ref=e167]: Jue inicio
+              - textbox "Jue inicio" [ref=e168]: 08:00
+              - generic [ref=e169]: a
+              - generic [ref=e170]: Jue fin
+              - textbox "Jue fin" [ref=e171]: 17:00
+            - generic [ref=e172]:
+              - generic [ref=e173]: Vie
+              - generic [ref=e174]: Vie inicio
+              - textbox "Vie inicio" [ref=e175]: 08:00
+              - generic [ref=e176]: a
+              - generic [ref=e177]: Vie fin
+              - textbox "Vie fin" [ref=e178]: 17:00
+            - generic [ref=e179]:
+              - generic [ref=e180]: Descanso diario (almuerzo u otro)
+              - combobox "Descanso diario (almuerzo u otro)" [ref=e181]:
+                - option "Sin descanso (0 min)" [selected]
+                - option "15 minutos"
+                - option "30 minutos"
+                - option "45 minutos"
+                - option "1 hora (60 min)"
+                - option "1 hora 30 min (90 min)"
+              - paragraph [ref=e182]: Se descuenta de las horas efectivas — Art. 167 CST
+            - generic [ref=e183]:
+              - generic [ref=e184]: Horas diarias pactadas (opcional)
+              - spinbutton "Horas diarias pactadas (opcional)" [ref=e185]
+              - paragraph [ref=e186]: Si no lo llenas, se usarán 8h como límite ordinario diario
+            - generic [ref=e187]:
+              - alert [ref=e188]:
+                - img [ref=e189]
+                - generic [ref=e191]: La jornada semanal (45h) excede el límite legal de 42 horas.
+              - paragraph [ref=e192]:
+                - text: "Horas brutas/semana:"
+                - generic [ref=e193]: 45h
+              - paragraph [ref=e194]: ℹ️ Este dato es orientativo — no afecta el cálculo de recargos
+          - generic [ref=e197]:
+            - heading "Período a calcular" [level=2] [ref=e198]
+            - generic [ref=e199]:
+              - generic [ref=e200]:
+                - generic [ref=e201]: Fecha de inicio
+                - textbox "Fecha de inicio" [ref=e202]: 2026-09-06
+              - generic [ref=e203]:
+                - generic [ref=e204]: Fecha de fin
+                - textbox "Fecha de fin" [ref=e205]: 2026-09-30
+            - generic [ref=e206]:
+              - paragraph [ref=e207]: Bloques de horario
+              - generic [ref=e208]:
+                - generic [ref=e210]:
+                  - generic [ref=e211]: Bloque 1
+                  - generic [ref=e212]: Lun-Vie
+                - generic [ref=e213]:
+                  - generic [ref=e214]:
+                    - generic [ref=e215]: Desde
+                    - textbox "Desde" [ref=e216]: 2026-09-06
+                  - generic [ref=e217]:
+                    - generic [ref=e218]: Hasta
+                    - textbox "Hasta" [ref=e219]: 2026-09-30
                 - generic [ref=e220]:
-                  - generic [ref=e221]: Lun
-                  - generic [ref=e222]: Lun inicio
-                  - textbox "Lun inicio" [ref=e223]: 08:00
-                  - generic [ref=e224]: a
-                  - generic [ref=e225]: Lun fin
-                  - textbox "Lun fin" [ref=e226]: 17:00
-                - generic [ref=e227]:
-                  - generic [ref=e228]: Mar
-                  - generic [ref=e229]: Mar inicio
-                  - textbox "Mar inicio" [ref=e230]: 08:00
-                  - generic [ref=e231]: a
-                  - generic [ref=e232]: Mar fin
-                  - textbox "Mar fin" [ref=e233]: 17:00
-                - generic [ref=e234]:
-                  - generic [ref=e235]: Mié
-                  - generic [ref=e236]: Mié inicio
-                  - textbox "Mié inicio" [ref=e237]: 08:00
-                  - generic [ref=e238]: a
-                  - generic [ref=e239]: Mié fin
-                  - textbox "Mié fin" [ref=e240]: 17:00
-                - generic [ref=e241]:
-                  - generic [ref=e242]: Jue
-                  - generic [ref=e243]: Jue inicio
-                  - textbox "Jue inicio" [ref=e244]: 08:00
-                  - generic [ref=e245]: a
-                  - generic [ref=e246]: Jue fin
-                  - textbox "Jue fin" [ref=e247]: 17:00
-                - generic [ref=e248]:
-                  - generic [ref=e249]: Vie
-                  - generic [ref=e250]: Vie inicio
-                  - textbox "Vie inicio" [ref=e251]: 08:00
-                  - generic [ref=e252]: a
-                  - generic [ref=e253]: Vie fin
-                  - textbox "Vie fin" [ref=e254]: 17:00
-                - generic [ref=e255]:
-                  - generic [ref=e256]: Descanso (almuerzo u otro)
-                  - combobox "Descanso (almuerzo u otro)" [ref=e257]:
+                  - generic [ref=e221]: Tipo de jornada
+                  - generic [ref=e222]:
+                    - button "Jornada estándar Descanso el domingo" [ref=e223]:
+                      - text: Jornada estándar
+                      - generic [ref=e224]: Descanso el domingo
+                    - button "Turno rotativo Elegir día(s) de descanso" [ref=e225]:
+                      - text: Turno rotativo
+                      - generic [ref=e226]: Elegir día(s) de descanso
+                  - paragraph [ref=e227]: El recargo dominical aplica sobre el día(s) de descanso obligatorio pactado(s), no necesariamente el domingo (Art. 179 CST).
+                - generic [ref=e228]:
+                  - button "Lun" [ref=e229]
+                  - button "Mar" [ref=e230]
+                  - button "Mié" [ref=e231]
+                  - button "Jue" [ref=e232]
+                  - button "Vie" [ref=e233]
+                  - button "Sáb" [ref=e234]
+                  - button "Dom" [ref=e235]
+                - generic [ref=e236]:
+                  - generic [ref=e237]: Lun
+                  - generic [ref=e238]: Lun inicio
+                  - textbox "Lun inicio" [ref=e239]: 08:00
+                  - generic [ref=e240]: a
+                  - generic [ref=e241]: Lun fin
+                  - textbox "Lun fin" [ref=e242]: 17:00
+                - generic [ref=e243]:
+                  - generic [ref=e244]: Mar
+                  - generic [ref=e245]: Mar inicio
+                  - textbox "Mar inicio" [ref=e246]: 08:00
+                  - generic [ref=e247]: a
+                  - generic [ref=e248]: Mar fin
+                  - textbox "Mar fin" [ref=e249]: 17:00
+                - generic [ref=e250]:
+                  - generic [ref=e251]: Mié
+                  - generic [ref=e252]: Mié inicio
+                  - textbox "Mié inicio" [ref=e253]: 08:00
+                  - generic [ref=e254]: a
+                  - generic [ref=e255]: Mié fin
+                  - textbox "Mié fin" [ref=e256]: 17:00
+                - generic [ref=e257]:
+                  - generic [ref=e258]: Jue
+                  - generic [ref=e259]: Jue inicio
+                  - textbox "Jue inicio" [ref=e260]: 08:00
+                  - generic [ref=e261]: a
+                  - generic [ref=e262]: Jue fin
+                  - textbox "Jue fin" [ref=e263]: 17:00
+                - generic [ref=e264]:
+                  - generic [ref=e265]: Vie
+                  - generic [ref=e266]: Vie inicio
+                  - textbox "Vie inicio" [ref=e267]: 08:00
+                  - generic [ref=e268]: a
+                  - generic [ref=e269]: Vie fin
+                  - textbox "Vie fin" [ref=e270]: 17:00
+                - generic [ref=e271]:
+                  - generic [ref=e272]: Descanso (almuerzo u otro)
+                  - combobox "Descanso (almuerzo u otro)" [ref=e273]:
                     - option "Sin descanso (0 min)" [selected]
                     - option "15 minutos"
                     - option "30 minutos"
                     - option "45 minutos"
                     - option "1 hora (60 min)"
                     - option "1 hora 30 min (90 min)"
-              - button "Añadir bloque" [ref=e258]:
-                - img [ref=e259]
+              - button "Añadir bloque" [ref=e274]:
+                - img [ref=e275]
                 - text: Añadir bloque
-            - button "Calcular período" [ref=e260]
-          - generic [ref=e261]:
-            - heading "Cómo funciona el cálculo" [level=2] [ref=e262]
-            - generic [ref=e264]:
-              - tablist [ref=e265]:
-                - tab "Cómo se calcula" [selected] [ref=e266]
-                - tab "Tabla de recargos" [ref=e267]
-                - tab "Recargo vs Extra" [ref=e268]
-                - tab "Ley Emiliani" [ref=e269]
-                - tab "Límites legales" [ref=e270]
-                - tab "Preguntas frecuentes" [ref=e271]
-              - tabpanel "Cómo se calcula" [ref=e272]:
-                - list [ref=e273]:
-                  - listitem [ref=e274]:
+            - button "Calcular período" [ref=e276]
+          - generic [ref=e277]:
+            - heading "Cómo funciona el cálculo" [level=2] [ref=e278]
+            - generic [ref=e280]:
+              - tablist [ref=e281]:
+                - tab "Cómo se calcula" [selected] [ref=e282]
+                - tab "Tabla de recargos" [ref=e283]
+                - tab "Recargo vs Extra" [ref=e284]
+                - tab "Ley Emiliani" [ref=e285]
+                - tab "Límites legales" [ref=e286]
+                - tab "Preguntas frecuentes" [ref=e287]
+              - tabpanel "Cómo se calcula" [ref=e288]:
+                - list [ref=e289]:
+                  - listitem [ref=e290]:
                     - text: Se calcula el
-                    - strong [ref=e275]: valor de la hora ordinaria
+                    - strong [ref=e291]: valor de la hora ordinaria
                     - text: ": salario mensual ÷ 210."
-                  - listitem [ref=e276]: Se genera una hora por cada hora del turno (incluyendo cruce de medianoche).
-                  - listitem [ref=e277]:
+                  - listitem [ref=e292]: Se genera una hora por cada hora del turno (incluyendo cruce de medianoche).
+                  - listitem [ref=e293]:
                     - text: "Por cada hora se determina:"
-                    - list [ref=e278]:
-                      - listitem [ref=e279]:
-                        - strong [ref=e280]: Dentro/fuera
+                    - list [ref=e294]:
+                      - listitem [ref=e295]:
+                        - strong [ref=e296]: Dentro/fuera
                         - text: de jornada pactada (día + horario).
-                      - listitem [ref=e281]:
-                        - strong [ref=e282]: Nocturna
+                      - listitem [ref=e297]:
+                        - strong [ref=e298]: Nocturna
                         - text: (19:00 - 05:59) o diurna.
-                      - listitem [ref=e283]:
-                        - strong [ref=e284]: Festivo
+                      - listitem [ref=e299]:
+                        - strong [ref=e300]: Festivo
                         - text: (domingo no laborable o festivo nacional).
-                  - listitem [ref=e285]:
+                  - listitem [ref=e301]:
                     - text: Con esas 3 condiciones se aplica la
-                    - strong [ref=e286]: tabla de 8 casos
+                    - strong [ref=e302]: tabla de 8 casos
                     - text: para determinar el tipo de hora y su recargo.
-                  - listitem [ref=e287]:
+                  - listitem [ref=e303]:
                     - text: El
-                    - strong [ref=e288]: valor por hora
+                    - strong [ref=e304]: valor por hora
                     - text: "se calcula como:"
-                    - list [ref=e289]:
-                      - listitem [ref=e290]:
+                    - list [ref=e305]:
+                      - listitem [ref=e306]:
                         - text: "Dentro de jornada:"
-                        - code [ref=e291]: valorHoraOrd × recargo
-                      - listitem [ref=e292]:
+                        - code [ref=e307]: valorHoraOrd × recargo
+                      - listitem [ref=e308]:
                         - text: "Fuera de jornada:"
-                        - code [ref=e293]: valorHoraOrd × (1 + recargo)
-                  - listitem [ref=e294]: Se suman todas las horas y se agrega el auxilio de transporte (si aplica).
-        - contentinfo [ref=e295]:
-          - paragraph [ref=e296]: Versión MVP — Solo validación diaria de horas extra.
-          - paragraph [ref=e297]: Esta herramienta no constituye asesoría legal. Verifica con tu empleador o un contador.
-      - generic [ref=e298]:
-        - img [ref=e299]
-        - img [ref=e357]
-    - complementary [ref=e414]:
-      - img [ref=e415]
+                        - code [ref=e309]: valorHoraOrd × (1 + recargo)
+                  - listitem [ref=e310]: Se suman todas las horas y se agrega el auxilio de transporte (si aplica).
+        - contentinfo [ref=e311]:
+          - paragraph [ref=e312]: Versión MVP — Solo validación diaria de horas extra.
+          - paragraph [ref=e313]: Esta herramienta no constituye asesoría legal. Verifica con tu empleador o un contador.
+      - generic [ref=e314]:
+        - img [ref=e315]
+        - img [ref=e373]
+    - complementary [ref=e430]:
+      - img [ref=e431]
 ```
 
 # Test source

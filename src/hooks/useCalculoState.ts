@@ -10,14 +10,18 @@ export function useCalculoState(
   auxilio: number,
   turno: Turno,
   tipoJornada: 'estandar' | 'rotativo',
-  diaDescanso: number
+  diasDescanso: number[],
+  horasPactadasDiarias: number | '',
+  minutosDescanso: number
 ) {
   const { resultado, error, calcular } = useCalculo();
   const [periodoResultado, setPeriodoResultado] = useState<ResultadoPeriodoType | null>(null);
 
   const handleCalcular = useCallback(() => {
-    calcular(salario, jornada, turno, auxilio || undefined, tipoJornada, diaDescanso);
-  }, [calcular, salario, jornada, turno, auxilio, tipoJornada, diaDescanso]);
+    // Convertir string vacío a null para el motor
+    const horasPactadasParaMotor = horasPactadasDiarias === '' ? null : horasPactadasDiarias;
+    calcular(salario, jornada, turno, auxilio || undefined, tipoJornada, diasDescanso, horasPactadasParaMotor, minutosDescanso);
+  }, [calcular, salario, jornada, turno, auxilio, tipoJornada, diasDescanso, horasPactadasDiarias, minutosDescanso]);
 
   const handleCalcularPeriodo = useCallback(
     (config: ConfiguracionPeriodo) => {

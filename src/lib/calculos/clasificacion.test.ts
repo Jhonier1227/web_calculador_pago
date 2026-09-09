@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clasificarHora, estaDentroDeJornada, esDiaLaboralHabitual } from './clasificacion';
+import { clasificarHora, esDiaConRecargoDominical, esHoraNocturna, estaDentroDeJornada, esDiaLaboralHabitual } from './clasificacion';
 import { TipoHora } from './tipos';
 import type { JornadaPactada } from './tipos';
 
@@ -18,140 +18,151 @@ function localDate(anio: number, mes: number, dia: number, hora = 12, min = 0): 
   return new Date(anio, mes, dia, hora, min);
 }
 
-describe('clasificarHora — Tabla de 8 casos (RF-05)', () => {
-  it('Caso 1: Dentro jornada, NO festivo, NO nocturna → ORDINARIA_DIURNA (0%)', () => {
-    const r = clasificarHora(false, true, false);
+describe('clasificarHora — Nueva lógica: acumulador semanal 42h (CB-01)', () => {
+  // Julio 2026: 6=Lun, 11=Sáb, 12=Dom (sin festivos)
+  const LUNES_NO_FESTIVO = localDate(2026, 6, 6);    // 6 jul 2026 = Lunes
+  const SABADO_NO_FESTIVO = localDate(2026, 6, 11);  // 11 jul 2026 = Sábado
+  const DOMINGO_NO_FESTIVO = localDate(2026, 6, 12); // 12 jul 2026 = Domingo
+  const MARTES_NO_FESTIVO = localDate(2026, 6, 7);   // 7 jul 2026 = Martes
+  const VIERNES_NO_FESTIVO = localDate(2026, 6, 10); // 10 jul 2026 = Viernes
+
+  const diasDescansoEstandar: number[] = [0]; // Domingo
+  const tipoEstandar: 'estandar' | 'rotativo' = 'estandar';
+
+  it('Horas 0-41 (dentro de 42h): ordinaria diurna → 0%', () => {
+    const r = clasificarHora(10, LUNES_NO_FESTIVO, 0, diasDescansoEstandar, tipoEstandar); // Lunes 10am, 0h acumuladas
     expect(r.tipoHora).toBe(TipoHora.ORDINARIA_DIURNA);
     expect(r.recargo).toBe(0);
     expect(r.esHoraExtra).toBe(false);
   });
 
-  it('Caso 2: Dentro jornada, NO festivo, SÍ nocturna → RECARGO_NOCTURNO (35%)', () => {
-    const r = clasificarHora(false, true, true);
-    expect(r.tipoHora).toBe(TipoHora.RECARGO_NOCTURNO);
+  it('Horas 0-41 (dentro de 42h): ordinaria nocturna → 35%', () => {
+    const r = clasificarHora(22, LUNES_NO_FESTIVO, 0, diasDescansoEstandar, tipoEstandar); // Lunes 10pm, 0h acumuladas
+    expect(r.tipoHora).toBe(TipoHora.ORDINARIA_NOCTURNA);
     expect(r.recargo).toBe(0.35);
     expect(r.esHoraExtra).toBe(false);
   });
 
-  it('Caso 3: Dentro jornada, SÍ festivo, NO nocturna → RECARGO_DOMINICAL_DIURNO (90%)', () => {
-    const r = clasificarHora(true, true, false);
-    expect(r.tipoHora).toBe(TipoHora.RECARGO_DOMINICAL_DIURNO);
-    expect(r.recargo).toBe(0.90);
+  it('Horas 0-41 (dentro de 42h): ordinaria dominical diurna → 90%', () => {
+    const r = clasificarHora(10, DOMINGO_NO_FESTIVO, 0, diasDescansoEstandar, tipoEstandar); // Domingo 10am, 0h acumuladas
+    expect(r.tipoHora).toBe(TipoHora.ORDINARIA_DOMINICAL);
+    expect(r.recargo).toBe(0.9);
     expect(r.esHoraExtra).toBe(false);
   });
 
-  it('Caso 4: Dentro jornada, SÍ festivo, SÍ nocturna → RECARGO_DOMINICAL_NOCTURNO (125%)', () => {
-    const r = clasificarHora(true, true, true);
-    expect(r.tipoHora).toBe(TipoHora.RECARGO_DOMINICAL_NOCTURNO);
+  it('Horas 0-41 (dentro de 42h): ordinaria dominical nocturna → 125% (35% + 90%)', () => {
+    const r = clasificarHora(22, DOMINGO_NO_FESTIVO, 0, diasDescansoEstandar, tipoEstandar); // Domingo 10pm, 0h acumuladas
+    expect(r.tipoHora).toBe(TipoHora.ORDINARIA_NOCTURNA_DOMINICAL);
     expect(r.recargo).toBe(1.25);
     expect(r.esHoraExtra).toBe(false);
   });
 
-  it('Caso 5: Fuera jornada, NO festivo, NO nocturna → EXTRA_DIURNA (25%)', () => {
-    const r = clasificarHora(false, false, false);
+  it('Hora 42 en adelante (>= 42h): extra diurna → 25%', () => {
+    const r = clasificarHora(10, SABADO_NO_FESTIVO, 42, diasDescansoEstandar, tipoEstandar); // Sábado 10am, 42h acumuladas
     expect(r.tipoHora).toBe(TipoHora.EXTRA_DIURNA);
     expect(r.recargo).toBe(0.25);
     expect(r.esHoraExtra).toBe(true);
   });
 
-  it('Caso 6: Fuera jornada, NO festivo, SÍ nocturna → EXTRA_NOCTURNA (75%)', () => {
-    const r = clasificarHora(false, false, true);
+  it('Hora 42 en adelante (>= 42h): extra nocturna → 75%', () => {
+    const r = clasificarHora(22, SABADO_NO_FESTIVO, 42, diasDescansoEstandar, tipoEstandar); // Sábado 10pm, 42h acumuladas
     expect(r.tipoHora).toBe(TipoHora.EXTRA_NOCTURNA);
     expect(r.recargo).toBe(0.75);
     expect(r.esHoraExtra).toBe(true);
   });
 
-  it('Caso 7: Fuera jornada, SÍ festivo, NO nocturna → EXTRA_DOMINICAL_DIURNA (115%)', () => {
-    const r = clasificarHora(true, false, false);
-    expect(r.tipoHora).toBe(TipoHora.EXTRA_DOMINICAL_DIURNA);
+  it('Hora 42 en adelante (>= 42h): extra dominical diurna → 115% (25% + 90%)', () => {
+    const r = clasificarHora(10, DOMINGO_NO_FESTIVO, 42, diasDescansoEstandar, tipoEstandar); // Domingo 10am, 42h acumuladas
+    expect(r.tipoHora).toBe(TipoHora.EXTRA_DIURNA_DOMINICAL);
     expect(r.recargo).toBe(1.15);
     expect(r.esHoraExtra).toBe(true);
   });
 
-  it('Caso 8: Fuera jornada, SÍ festivo, SÍ nocturna → EXTRA_DOMINICAL_NOCTURNA (165%)', () => {
-    const r = clasificarHora(true, false, true);
-    expect(r.tipoHora).toBe(TipoHora.EXTRA_DOMINICAL_NOCTURNA);
+  it('Hora 42 en adelante (>= 42h): extra dominical nocturna → 165% (75% + 90%)', () => {
+    const r = clasificarHora(22, DOMINGO_NO_FESTIVO, 42, diasDescansoEstandar, tipoEstandar); // Domingo 10pm, 42h acumuladas
+    expect(r.tipoHora).toBe(TipoHora.EXTRA_NOCTURNA_DOMINICAL);
     expect(r.recargo).toBe(1.65);
     expect(r.esHoraExtra).toBe(true);
   });
+
+  it('Turno rotativo con día de descanso martes (2): martes es dominical', () => {
+    const diasDescansoRotativo: number[] = [2]; // Martes
+    const tipoRotativo: 'estandar' | 'rotativo' = 'rotativo';
+    const r = clasificarHora(10, MARTES_NO_FESTIVO, 0, diasDescansoRotativo, tipoRotativo); // Martes 10am
+    expect(r.tipoHora).toBe(TipoHora.ORDINARIA_DOMINICAL);
+    expect(r.recargo).toBe(0.9);
+    expect(r.esHoraExtra).toBe(false);
+  });
+
+  it('Turno rotativo con 2 días descanso (martes y viernes): viernes es dominical', () => {
+    const diasDescansoRotativo: number[] = [2, 5]; // Martes y viernes
+    const tipoRotativo: 'estandar' | 'rotativo' = 'rotativo';
+    const r = clasificarHora(10, VIERNES_NO_FESTIVO, 0, diasDescansoRotativo, tipoRotativo); // Viernes 10am
+    expect(r.tipoHora).toBe(TipoHora.ORDINARIA_DOMINICAL);
+    expect(r.recargo).toBe(0.9);
+    expect(r.esHoraExtra).toBe(false);
+  });
 });
 
-describe('esDiaLaboralHabitual', () => {
-  it('lunes (15 jun) es laboral en jornada L-V', () => {
+describe('esDiaConRecargoDominical', () => {
+  // Julio 2026
+  const DOMINGO = localDate(2026, 6, 12); // 12 jul = Domingo
+  const LUNES = localDate(2026, 6, 6);    // 6 jul = Lunes
+  const MARTES = localDate(2026, 6, 7);   // 7 jul = Martes
+  const VIERNES = localDate(2026, 6, 10); // 10 jul = Viernes
+
+  it('estandar: domingo (0) → true', () => {
+    expect(esDiaConRecargoDominical(DOMINGO, [0], 'estandar')).toBe(true);
+  });
+
+  it('estandar: lunes (1) → false', () => {
+    expect(esDiaConRecargoDominical(LUNES, [0], 'estandar')).toBe(false);
+  });
+
+  it('rotativo: día descanso martes (2) → true', () => {
+    expect(esDiaConRecargoDominical(MARTES, [2], 'rotativo')).toBe(true);
+  });
+
+  it('rotativo: día no descanso → false', () => {
+    expect(esDiaConRecargoDominical(LUNES, [2], 'rotativo')).toBe(false);
+  });
+
+  it('rotativo: 2 días descanso (martes y viernes) → ambos true', () => {
+    expect(esDiaConRecargoDominical(MARTES, [2, 5], 'rotativo')).toBe(true);
+    expect(esDiaConRecargoDominical(VIERNES, [2, 5], 'rotativo')).toBe(true);
+  });
+});
+
+describe('esHoraNocturna', () => {
+  it('19:00 (7pm) → true', () => {
+    expect(esHoraNocturna(19)).toBe(true);
+  });
+
+  it('05:00 (5am) → true', () => {
+    expect(esHoraNocturna(5)).toBe(true);
+  });
+
+  it('06:00 (6am) → false', () => {
+    expect(esHoraNocturna(6)).toBe(false);
+  });
+
+  it('18:00 (6pm) → false', () => {
+    expect(esHoraNocturna(18)).toBe(false);
+  });
+
+  it('00:00 (medianoche) → true', () => {
+    expect(esHoraNocturna(0)).toBe(true);
+  });
+});
+
+describe('estaDentroDeJornada — legacy (always true)', () => {
+  it('always returns true for backward compatibility', () => {
+    expect(estaDentroDeJornada(localDate(2026, 5, 15), jornadaLV)).toBe(true);
+  });
+});
+
+describe('esDiaLaboralHabitual — legacy (always true)', () => {
+  it('always returns true for backward compatibility', () => {
     expect(esDiaLaboralHabitual(localDate(2026, 5, 15), jornadaLV)).toBe(true);
-  });
-
-  it('sábado (20 jun) NO es laboral en jornada L-V', () => {
-    expect(esDiaLaboralHabitual(localDate(2026, 5, 20), jornadaLV)).toBe(false);
-  });
-
-  it('domingo (21 jun) NO es laboral en jornada L-V', () => {
-    expect(esDiaLaboralHabitual(localDate(2026, 5, 21), jornadaLV)).toBe(false);
-  });
-
-  it('domingo SÍ es laboral si está en jornada L-D', () => {
-    const jornadaLD: JornadaPactada = {
-      dias: [1, 2, 3, 4, 5, 6, 7],
-      horariosPorDia: {
-        1: { inicio: '08:00', fin: '17:00' },
-        2: { inicio: '08:00', fin: '17:00' },
-        3: { inicio: '08:00', fin: '17:00' },
-        4: { inicio: '08:00', fin: '17:00' },
-        5: { inicio: '08:00', fin: '17:00' },
-        6: { inicio: '08:00', fin: '17:00' },
-        7: { inicio: '08:00', fin: '17:00' },
-      },
-    };
-    expect(esDiaLaboralHabitual(localDate(2026, 5, 21), jornadaLD)).toBe(true);
-  });
-});
-
-describe('estaDentroDeJornada', () => {
-  it('10:00 lunes está dentro de jornada L-V 8-17', () => {
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 10), jornadaLV)).toBe(true);
-  });
-
-  it('07:59 lunes NO está dentro de jornada L-V 8-17', () => {
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 7, 59), jornadaLV)).toBe(false);
-  });
-
-  it('17:00 lunes NO está dentro (fin exclusivo)', () => {
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 17), jornadaLV)).toBe(false);
-  });
-
-  it('sábado NO está dentro (no es día laboral)', () => {
-    expect(estaDentroDeJornada(localDate(2026, 5, 20, 10), jornadaLV)).toBe(false);
-  });
-
-  it('jornada con horario por día', () => {
-    const j: JornadaPactada = {
-      dias: [1, 2],
-      horariosPorDia: {
-        1: { inicio: '08:00', fin: '17:00' },
-        2: { inicio: '12:00', fin: '20:00' },
-      },
-    };
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 10), j)).toBe(true); // Lun 10am
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 18), j)).toBe(false); // Lun 6pm
-    expect(estaDentroDeJornada(localDate(2026, 5, 16, 10), j)).toBe(false); // Mar 10am
-    expect(estaDentroDeJornada(localDate(2026, 5, 16, 15), j)).toBe(true); // Mar 3pm
-  });
-
-  it('jornada nocturna que cruza medianoche (22:00-06:00) para un día', () => {
-    const j: JornadaPactada = {
-      dias: [1],
-      horariosPorDia: {
-        1: { inicio: '22:00', fin: '06:00' },
-      },
-    };
-    // Las horas del LUNES antes de medianoche están dentro
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 23), j)).toBe(true); // Lun 11pm
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 22), j)).toBe(true); // Lun 10pm
-    // Las horas del LUNES antes del inicio están fuera
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 21), j)).toBe(false); // Lun 9pm
-    // Madrugada del LUNES (ej. 05:00) también está dentro
-    expect(estaDentroDeJornada(localDate(2026, 5, 15, 5), j)).toBe(true); // Lun 5am
-    // Después de medianoche es MARTES (día 2) — sin horario → false
-    expect(estaDentroDeJornada(localDate(2026, 5, 16, 2), j)).toBe(false); // Mar 2am
   });
 });

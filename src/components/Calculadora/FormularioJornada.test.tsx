@@ -16,6 +16,11 @@ describe('FormularioJornada', () => {
   };
 
   const defaultJornada: JornadaPactada = { dias: defaultDias, horariosPorDia: defaultHorarios };
+  const defaultDiasDescanso = [0];
+  const defaultMinutosDescanso = 0;
+  const defaultOnMinutosDescansoChange = vi.fn();
+  const defaultHorasPactadasDiarias = '' as number | '';
+  const defaultOnHorasPactadasDiariasChange = vi.fn();
 
   it('renderiza título y descripción', () => {
     render(
@@ -26,7 +31,11 @@ describe('FormularioJornada', () => {
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
         tipoJornada={'estandar'}
-        diaDescanso={0}
+        diasDescanso={defaultDiasDescanso}
+        minutosDescanso={defaultMinutosDescanso}
+        onMinutosDescansoChange={defaultOnMinutosDescansoChange}
+        horasPactadasDiarias={defaultHorasPactadasDiarias}
+        onHorasPactadasDiariasChange={defaultOnHorasPactadasDiariasChange}
       />,
     );
 
@@ -45,7 +54,11 @@ describe('FormularioJornada', () => {
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
         tipoJornada={'estandar'}
-        diaDescanso={0}
+        diasDescanso={defaultDiasDescanso}
+        minutosDescanso={defaultMinutosDescanso}
+        onMinutosDescansoChange={defaultOnMinutosDescansoChange}
+        horasPactadasDiarias={defaultHorasPactadasDiarias}
+        onHorasPactadasDiariasChange={defaultOnHorasPactadasDiariasChange}
       />,
     );
 
@@ -69,7 +82,11 @@ describe('FormularioJornada', () => {
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
         tipoJornada={'estandar'}
-        diaDescanso={0}
+        diasDescanso={defaultDiasDescanso}
+        minutosDescanso={defaultMinutosDescanso}
+        onMinutosDescansoChange={defaultOnMinutosDescansoChange}
+        horasPactadasDiarias={defaultHorasPactadasDiarias}
+        onHorasPactadasDiariasChange={defaultOnHorasPactadasDiariasChange}
       />,
     );
 
@@ -86,7 +103,11 @@ describe('FormularioJornada', () => {
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
         tipoJornada={'estandar'}
-        diaDescanso={0}
+        diasDescanso={defaultDiasDescanso}
+        minutosDescanso={defaultMinutosDescanso}
+        onMinutosDescansoChange={defaultOnMinutosDescansoChange}
+        horasPactadasDiarias={defaultHorasPactadasDiarias}
+        onHorasPactadasDiariasChange={defaultOnHorasPactadasDiariasChange}
       />,
     );
 
@@ -107,7 +128,11 @@ describe('FormularioJornada', () => {
         onUpdateHorario={onUpdateHorario}
         jornada={defaultJornada}
         tipoJornada={'estandar'}
-        diaDescanso={0}
+        diasDescanso={defaultDiasDescanso}
+        minutosDescanso={defaultMinutosDescanso}
+        onMinutosDescansoChange={defaultOnMinutosDescansoChange}
+        horasPactadasDiarias={defaultHorasPactadasDiarias}
+        onHorasPactadasDiariasChange={defaultOnHorasPactadasDiariasChange}
       />,
     );
 
@@ -125,11 +150,15 @@ describe('FormularioJornada', () => {
         onUpdateHorario={vi.fn()}
         jornada={defaultJornada}
         tipoJornada={'estandar'}
-        diaDescanso={0}
+        diasDescanso={defaultDiasDescanso}
+        minutosDescanso={defaultMinutosDescanso}
+        onMinutosDescansoChange={defaultOnMinutosDescansoChange}
+        horasPactadasDiarias={defaultHorasPactadasDiarias}
+        onHorasPactadasDiariasChange={defaultOnHorasPactadasDiariasChange}
       />,
     );
 
-    expect(screen.getByText(/Horas\/semana:/)).toBeInTheDocument();
+    expect(screen.getByText(/Horas brutas\/semana:/)).toBeInTheDocument();
   });
 
   it('muestra mensaje de domingo en jornada cuando día 7 está seleccionado', () => {
@@ -143,7 +172,11 @@ describe('FormularioJornada', () => {
         onUpdateHorario={vi.fn()}
         jornada={{ dias: diasConDomingo, horariosPorDia: defaultHorarios }}
         tipoJornada={'estandar'}
-        diaDescanso={0}
+        diasDescanso={defaultDiasDescanso}
+        minutosDescanso={defaultMinutosDescanso}
+        onMinutosDescansoChange={defaultOnMinutosDescansoChange}
+        horasPactadasDiarias={defaultHorasPactadasDiarias}
+        onHorasPactadasDiariasChange={defaultOnHorasPactadasDiariasChange}
       />,
     );
 

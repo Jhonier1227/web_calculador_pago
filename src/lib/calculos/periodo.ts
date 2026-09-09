@@ -1,5 +1,5 @@
 import type { ConfiguracionPeriodo, ResultadoPeriodo, JornadaPactada, Turno, ResumenTipo, Advertencia, TipoHora, DetalleDominicalFestivo, MotivoRecargoDominical } from './tipos';
-import { validarJornadaPactada, validarAñoFestivos, diaSemanaJSaISO } from './utilidades';
+import { validarJornadaPactada, validarAñoFestivos, diaSemanaJSaISO, calcularDuracionEnMinutos } from './utilidades';
 import { calcularTurno } from './motor';
 import { nombreFestivo, esFestivo } from './festivos';
 import { LEGAL_LIMITS } from './constantes';
@@ -71,6 +71,7 @@ export function validarConfiguracionPeriodo(config: ConfiguracionPeriodo): Adver
 
 function emptyResult(advertencias: Advertencia[]): ResultadoPeriodo {
   return {
+    totalRecargos: 0,
     totalAPagar: 0,
     resumenPorTipo: [],
     totalHorasOrdinarias: 0,
@@ -81,6 +82,8 @@ function emptyResult(advertencias: Advertencia[]): ResultadoPeriodo {
     diasCalculados: 0,
     diasOmitidos: 0,
     detalleDominicalFestivo: [],
+    auxilioTransporte: 0,
+    totalReferencial: 0,
   };
 }
 
@@ -114,7 +117,7 @@ export function calcularPeriodo(
     }
   }
 
-  let totalAPagar = 0;
+  let totalRecargos = 0;
   let totalHorasOrdinarias = 0;
   let totalHorasExtras = 0;
   let totalHorasNocturnas = 0;
@@ -161,7 +164,7 @@ export function calcularPeriodo(
 
     const diaISO = diaSemanaJSaISO(current.getDay());
 
-    if (diaISO === 1) {
+    if (diaISO === 1 && bloque.tipoJornada === 'estandar') {
       acumuladorLV = 0;
     }
 
@@ -180,10 +183,10 @@ export function calcularPeriodo(
 
     const resultado = calcularTurno(
       salarioMensual, jornadaPactada, turno, undefined,
-      acumuladorLV, bloque.tipoJornada, bloque.diaDescanso,
+      acumuladorLV, bloque.tipoJornada, bloque.diasDescanso,
     );
 
-    totalAPagar += resultado.totalPagar;
+    totalRecargos += resultado.totalRecargos;
 
     let diaTieneFestivo = false;
     for (const h of resultado.desgloseHoras) {
@@ -202,11 +205,11 @@ export function calcularPeriodo(
         esFestivo: nombre !== null,
         nombreFestivo: nombre,
         tipoJornada: bloque.tipoJornada,
-        diaDescanso: bloque.diaDescanso,
+        diasDescanso: bloque.diasDescanso,
       };
       for (const r of resultado.resumenPorTipo) {
         if (r.tipoHora === 'RECARGO_DOMINICAL_DIURNO' || r.tipoHora === 'RECARGO_DOMINICAL_NOCTURNO' ||
-            r.tipoHora === 'EXTRA_DOMINICAL_DIURNA' || r.tipoHora === 'EXTRA_DOMINICAL_NOCTURNA') {
+            r.tipoHora === 'EXTRA_DIURNA_DOMINICAL' || r.tipoHora === 'EXTRA_NOCTURNA_DOMINICAL') {
           detalleDominicalFestivo.push({
             fecha: dateStr,
             tipoHora: r.tipoHora,
@@ -241,21 +244,26 @@ export function calcularPeriodo(
       }
     }
 
-    acumuladorLV += resultado.desgloseHoras.length;
+    const minutosEfectivosDia = calcularDuracionEnMinutos(horario.inicio, horario.fin, 0);
+    acumuladorLV += minutosEfectivosDia / 60;
 
     diasCalculados++;
     current.setDate(current.getDate() + 1);
   }
 
-  if (auxilioTransporte && auxilioTransporte > 0) {
-    const prorated = Math.round(auxilioTransporte * (diasCalculados / 30));
-    totalAPagar += prorated;
+  const auxilio = auxilioTransporte ?? 0;
+  let auxilioProrrateado = 0;
+  if (auxilio > 0 && diasCalculados > 0) {
+    auxilioProrrateado = Math.round(auxilio * (diasCalculados / 30));
     advertencias.push({
       codigo: 'AUXILIO_PRORRATEADO',
-      mensaje: `Auxilio de transporte prorrateado: $${prorated.toLocaleString('es-CO')} ($${auxilioTransporte.toLocaleString('es-CO')} × ${diasCalculados}/30)`,
+      mensaje: `Auxilio de transporte prorrateado: $${auxilioProrrateado.toLocaleString('es-CO')} ($${auxilio.toLocaleString('es-CO')} × ${diasCalculados}/30)`,
       severidad: 'info',
     });
   }
+
+  const totalReferencial = totalRecargos + auxilioProrrateado;
+  const totalAPagar = totalReferencial; // compatibilidad
 
   const resumenPorTipo: ResumenTipo[] = [];
   for (const [tipoHora, datos] of resumenMap) {
@@ -285,6 +293,7 @@ export function calcularPeriodo(
   }
 
   return {
+    totalRecargos,
     totalAPagar,
     resumenPorTipo,
     totalHorasOrdinarias,
@@ -295,5 +304,7 @@ export function calcularPeriodo(
     diasCalculados,
     diasOmitidos,
     detalleDominicalFestivo,
+    auxilioTransporte: auxilioProrrateado,
+    totalReferencial,
   };
 }

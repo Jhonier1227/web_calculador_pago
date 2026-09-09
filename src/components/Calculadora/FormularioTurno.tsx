@@ -1,10 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { validarTurno } from '../../lib/calculos/index';
 import type { Turno } from '../../lib/calculos/index';
 import { validarFechaNoAnterior } from '../../lib/validaciones/validarInputs';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
-import { PlusIcon, TrashIcon, ClockIcon } from '../ui/Icons';
+import { PlusIcon, TrashIcon, ClockIcon, CheckIcon } from '../ui/Icons';
+
+const diaLabels: Record<number, string> = {
+  0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
+};
 
 interface FormularioTurnoProps {
   fecha: string;
@@ -20,8 +24,8 @@ interface FormularioTurnoProps {
   onMinutosDescansoChange: (v: number) => void;
   tipoJornada: 'estandar' | 'rotativo';
   onTipoJornadaChange: (v: 'estandar' | 'rotativo') => void;
-  diaDescanso: number;
-  onDiaDescansoChange: (v: number) => void;
+  diasDescanso: number[];
+  onDiasDescansoChange: (v: number[]) => void;
 }
 
 export function FormularioTurno({
@@ -38,8 +42,8 @@ export function FormularioTurno({
   onMinutosDescansoChange,
   tipoJornada,
   onTipoJornadaChange,
-  diaDescanso,
-  onDiaDescansoChange,
+  diasDescanso,
+  onDiasDescansoChange,
 }: FormularioTurnoProps) {
   const errores = useMemo(() => validarTurno(turno), [turno]);
   const erroresBloqueantes = errores.filter((a) => a.severidad === 'error');
@@ -47,6 +51,75 @@ export function FormularioTurno({
 
   const puedeCalcular = jornadaValida && erroresBloqueantes.length === 0;
   const cruzaMedianoche = franjas.some((f) => f.fin < f.inicio);
+
+  // Estados para animación de carga y confirmación
+  const [calculando, setCalculando] = useState(false);
+  const [resultadoMostrado, setResultadoMostrado] = useState(false);
+
+  // Estados para selector de días de descanso (rotativo)
+  const [cantidadDescansos, setCantidadDescansos] = useState(() => diasDescanso.length || 1);
+
+  // Sincronizar cantidadDescansos con diasDescanso cuando cambia externamente
+  useEffect(() => {
+    if (diasDescanso.length !== cantidadDescansos) {
+      setCantidadDescansos(diasDescanso.length || 1);
+    }
+  }, [diasDescanso]);
+
+  const handleCantidadDescansosChange = (nuevaCantidad: 1 | 2) => {
+    setCantidadDescansos(nuevaCantidad);
+    let nuevosDias = [...diasDescanso];
+    if (nuevaCantidad === 1) {
+      nuevosDias = nuevosDias.slice(0, 1);
+    } else if (nuevaCantidad === 2 && nuevosDias.length === 1) {
+      // Agregar un segundo día diferente al primero
+      const siguiente = nuevosDias[0] === 6 ? 0 : nuevosDias[0] + 1;
+      nuevosDias = [nuevosDias[0], siguiente];
+    }
+    onDiasDescansoChange(nuevosDias);
+  };
+
+  const handlePrimerDiaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const valor = Number(e.target.value);
+    if (cantidadDescansos === 1) {
+      onDiasDescansoChange([valor]);
+    } else {
+      // Si el segundo día era igual al nuevo primer día, cambiarlo
+      let segundo = diasDescanso[1];
+      if (segundo === valor) {
+        segundo = valor === 6 ? 0 : valor + 1;
+      }
+      onDiasDescansoChange([valor, segundo]);
+    }
+  };
+
+  const handleSegundoDiaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const valor = Number(e.target.value);
+    onDiasDescansoChange([diasDescanso[0], valor]);
+  };
+
+  const handleCalcular = useCallback(async () => {
+    if (!puedeCalcular) return;
+
+    setCalculando(true);
+    setResultadoMostrado(false);
+
+    // Simular procesamiento mínimo para dar feedback visual (500ms)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    onCalcular();
+
+    setCalculando(false);
+    setResultadoMostrado(true);
+  }, [puedeCalcular, onCalcular]);
+
+  // Auto-ocultar confirmación después de 2 segundos
+  useEffect(() => {
+    if (resultadoMostrado) {
+      const timer = setTimeout(() => setResultadoMostrado(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [resultadoMostrado]);
 
   return (
     <section className="mb-8">
@@ -156,32 +229,84 @@ export function FormularioTurno({
             }`}
           >
             Turno rotativo
-            <span className="mt-0.5 block text-xs opacity-60">Elegir día de descanso</span>
+            <span className="mt-0.5 block text-xs opacity-60">Elegir día(s) de descanso</span>
           </button>
         </div>
         {tipoJornada === 'rotativo' && (
-          <div className="flex flex-col gap-1">
-            <label htmlFor="dia-descanso-turno" className="text-xs text-slate-400">
-              ¿Cuál es tu día de descanso semanal?
-            </label>
-            <select
-              id="dia-descanso-turno"
-              value={diaDescanso}
-              onChange={(e) => onDiaDescansoChange(Number(e.target.value))}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-            >
-              <option value={0}>Domingo</option>
-              <option value={1}>Lunes</option>
-              <option value={2}>Martes</option>
-              <option value={3}>Miércoles</option>
-              <option value={4}>Jueves</option>
-              <option value={5}>Viernes</option>
-              <option value={6}>Sábado</option>
-            </select>
+          <div className="flex flex-col gap-3">
+            {/* Selector de cantidad de días de descanso */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-slate-400">¿Cuántos días de descanso tienes por semana?</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleCantidadDescansosChange(1)}
+                  className={`flex-1 py-2 rounded-lg text-sm border transition-all ${
+                    cantidadDescansos === 1
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-600 dark:text-emerald-400'
+                      : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  1 día de descanso
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCantidadDescansosChange(2)}
+                  className={`flex-1 py-2 rounded-lg text-sm border transition-all ${
+                    cantidadDescansos === 2
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-600 dark:text-emerald-400'
+                      : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  2 días de descanso
+                </button>
+              </div>
+            </div>
+
+            {/* Selector del primer día de descanso */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="dia-descanso-1" className="text-xs text-slate-400">
+                {cantidadDescansos === 1 ? '¿Cuál es tu día de descanso?' : 'Primer día de descanso:'}
+              </label>
+              <select
+                id="dia-descanso-1"
+                value={diasDescanso[0] ?? 0}
+                onChange={handlePrimerDiaChange}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              >
+                {Object.entries(diaLabels).map(([key, label]) => (
+                  <option key={key} value={Number(key)}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Selector del segundo día — solo si cantidadDescansos === 2 */}
+            {cantidadDescansos === 2 && (
+              <div className="flex flex-col gap-1">
+                <label htmlFor="dia-descanso-2" className="text-xs text-slate-400">
+                  Segundo día de descanso:
+                </label>
+                <select
+                  id="dia-descanso-2"
+                  value={diasDescanso[1] ?? (diasDescanso[0] === 6 ? 0 : diasDescanso[0] + 1)}
+                  onChange={handleSegundoDiaChange}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                >
+                  {Object.entries(diaLabels)
+                    .filter(([key]) => Number(key) !== diasDescanso[0])
+                    .map(([key, label]) => (
+                      <option key={key} value={Number(key)}>{label}</option>
+                    ))}
+                </select>
+                <p className="text-xs text-slate-500">
+                  Ambos días generarán recargo del 90% si se trabajan — Art. 179 CST
+                </p>
+              </div>
+            )}
           </div>
         )}
         <p className="text-xs text-slate-500">
-          El recargo dominical aplica sobre el día de descanso obligatorio pactado, no necesariamente el domingo (Art. 179 CST).
+          El recargo dominical aplica sobre el día(s) de descanso obligatorio pactado(s), no necesariamente el domingo (Art. 179 CST).
         </p>
       </div>
 
@@ -215,14 +340,34 @@ export function FormularioTurno({
         <Alert key={i} severity="info">{a.mensaje}</Alert>
       ))}
 
-      <Button
-        onClick={onCalcular}
-        disabled={!puedeCalcular}
-        className="mt-4 w-full sm:w-auto"
-        size="lg"
-      >
-        Calcular
-      </Button>
+      {/* Spinner de carga (500ms) */}
+      {calculando && (
+        <div className="mt-4 flex items-center justify-center gap-3 py-8">
+          <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+          <span className="text-emerald-400 text-sm font-medium">Calculando tu turno...</span>
+        </div>
+      )}
+
+      {/* Confirmación de cálculo exitoso (desaparece en 2s) */}
+      {resultadoMostrado && !calculando && (
+        <div className="mt-4 animate-[fadeIn_0.3s_ease_both]">
+          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-emerald-950/50 border border-emerald-700/50 animate-[fadeIn_0.2s_ease_both]">
+            <CheckIcon className="h-4 w-4 text-emerald-400" />
+            <span className="text-xs text-emerald-300">Turno calculado correctamente</span>
+          </div>
+        </div>
+      )}
+
+      {!calculando && (
+        <Button
+          onClick={handleCalcular}
+          disabled={!puedeCalcular}
+          className="mt-4 w-full sm:w-auto"
+          size="lg"
+        >
+          Calcular
+        </Button>
+      )}
     </section>
   );
 }

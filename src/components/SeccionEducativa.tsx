@@ -12,8 +12,8 @@ const recargoRows = [
   { tipo: TipoHora.RECARGO_DOMINICAL_NOCTURNO, desc: 'Recargo dominical nocturno', recargo: `${Math.round(RECARGO_PORCENTAJES.DOMINICAL_FESTIVO_NOCTURNO * 100)}%` },
   { tipo: TipoHora.EXTRA_DIURNA, desc: 'Extra diurna', recargo: `${Math.round(RECARGO_PORCENTAJES.EXTRA_DIURNA * 100)}%` },
   { tipo: TipoHora.EXTRA_NOCTURNA, desc: 'Extra nocturna', recargo: `${Math.round(RECARGO_PORCENTAJES.EXTRA_NOCTURNA * 100)}%` },
-  { tipo: TipoHora.EXTRA_DOMINICAL_DIURNA, desc: 'Extra dominical diurna', recargo: `${Math.round(RECARGO_PORCENTAJES.EXTRA_DOMINICAL_FESTIVA_DIURNA * 100)}%` },
-  { tipo: TipoHora.EXTRA_DOMINICAL_NOCTURNA, desc: 'Extra dominical nocturna', recargo: `${Math.round(RECARGO_PORCENTAJES.EXTRA_DOMINICAL_FESTIVA_NOCTURNA * 100)}%` },
+  { tipo: TipoHora.EXTRA_DIURNA_DOMINICAL, desc: 'Extra dominical diurna', recargo: `${Math.round(RECARGO_PORCENTAJES.EXTRA_DOMINICAL_FESTIVA_DIURNA * 100)}%` },
+  { tipo: TipoHora.EXTRA_NOCTURNA_DOMINICAL, desc: 'Extra dominical nocturna', recargo: `${Math.round(RECARGO_PORCENTAJES.EXTRA_DOMINICAL_FESTIVA_NOCTURNA * 100)}%` },
 ];
 
 const faq = [

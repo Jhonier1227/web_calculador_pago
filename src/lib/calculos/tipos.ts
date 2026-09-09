@@ -1,13 +1,15 @@
 export const TipoHora = {
   ORDINARIA_DIURNA: 'ORDINARIA_DIURNA',
   ORDINARIA_NOCTURNA: 'ORDINARIA_NOCTURNA',
+  ORDINARIA_DOMINICAL: 'ORDINARIA_DOMINICAL',
+  ORDINARIA_NOCTURNA_DOMINICAL: 'ORDINARIA_NOCTURNA_DOMINICAL',
   RECARGO_NOCTURNO: 'RECARGO_NOCTURNO',
   RECARGO_DOMINICAL_DIURNO: 'RECARGO_DOMINICAL_DIURNO',
   RECARGO_DOMINICAL_NOCTURNO: 'RECARGO_DOMINICAL_NOCTURNO',
   EXTRA_DIURNA: 'EXTRA_DIURNA',
   EXTRA_NOCTURNA: 'EXTRA_NOCTURNA',
-  EXTRA_DOMINICAL_DIURNA: 'EXTRA_DOMINICAL_DIURNA',
-  EXTRA_DOMINICAL_NOCTURNA: 'EXTRA_DOMINICAL_NOCTURNA',
+  EXTRA_DIURNA_DOMINICAL: 'EXTRA_DIURNA_DOMINICAL',
+  EXTRA_NOCTURNA_DOMINICAL: 'EXTRA_NOCTURNA_DOMINICAL',
 } as const;
 
 export type TipoHora = (typeof TipoHora)[keyof typeof TipoHora];
@@ -62,6 +64,18 @@ export interface Advertencia {
 export interface ResultadoCalculo {
   desgloseHoras: HoraCalculada[];
   resumenPorTipo: ResumenTipo[];
+  // Cálculo principal — sin auxilio
+  totalRecargos: number;
+  horasOrdinarias: number;
+  horasExtra: number;
+  horasNocturnas: number;
+  horasDominicalesFestivas: number;
+
+  // Referencia separada (auxilio)
+  auxilioTransporte: number;
+  totalReferencial: number;
+
+  // Compatibilidad hacia atrás
   totalPagar: number;
   advertencias: Advertencia[];
 }
@@ -71,7 +85,7 @@ export interface MotivoRecargoDominical {
   esFestivo: boolean;
   nombreFestivo: string | null;
   tipoJornada: 'estandar' | 'rotativo';
-  diaDescanso: number;
+  diasDescanso: number[]; // Array de 1 o 2 días (0=Dom, 1=Lun, ..., 6=Sáb)
 }
 
 export interface DetalleDominicalFestivo {
@@ -104,7 +118,10 @@ export type CodigosAdvertencia =
   | 'AUXILIO_PRORRATEADO'
   | 'ADR_OPCIONALIDAD_FRANJAS'
   | 'LUZ_FRANJAS_MULTIPLES'
-  | 'FRANJA_INVALIDA';
+  | 'FRANJA_INVALIDA'
+  | 'DESCANSO_EXCEDE_TURNO'
+  | 'SIN_FRANJAS'
+  | 'DEMASIADAS_FRANJAS';
 
 export interface BloqueHorario {
   id: string;
@@ -112,7 +129,7 @@ export interface BloqueHorario {
   fechaFin: string;
   horariosPorDia: Record<number, { inicio: string; fin: string }>;
   tipoJornada: 'estandar' | 'rotativo';
-  diaDescanso: number;
+  diasDescanso: number[]; // Array de 1 o 2 días (0=Dom, 1=Lun, ..., 6=Sáb)
 }
 
 export interface ConfiguracionPeriodo {
@@ -122,12 +139,20 @@ export interface ConfiguracionPeriodo {
 }
 
 export interface ResultadoPeriodo {
-  totalAPagar: number;
+  // Cálculo principal — sin auxilio
+  totalRecargos: number;
   resumenPorTipo: ResumenTipo[];
   totalHorasOrdinarias: number;
   totalHorasExtras: number;
   totalHorasNocturnas: number;
   totalHorasDominicalesFestivas: number;
+
+  // Referencia separada (auxilio)
+  auxilioTransporte: number;
+  totalReferencial: number;
+
+  // Compatibilidad hacia atrás
+  totalAPagar: number;
   advertencias: Advertencia[];
   diasCalculados: number;
   diasOmitidos: number;

@@ -19,7 +19,7 @@ function crearConfig(overrides?: Partial<ConfiguracionPeriodo>): ConfiguracionPe
         5: { inicio: '08:00', fin: '17:00' },
       },
       tipoJornada: 'estandar',
-      diaDescanso: 0,
+      diasDescanso: [0],
     }],
     ...overrides,
   };
@@ -40,12 +40,12 @@ describe('validarConfiguracionPeriodo', () => {
         {
           id: 'b1', fechaInicio: '2026-07-06', fechaFin: '2026-07-10',
           horariosPorDia: { 1: { inicio: '08:00', fin: '17:00' } },
-          tipoJornada: 'estandar', diaDescanso: 0,
+          tipoJornada: 'estandar', diasDescanso: [0],
         },
         {
           id: 'b2', fechaInicio: '2026-07-13', fechaFin: '2026-07-17',
           horariosPorDia: { 1: { inicio: '09:00', fin: '18:00' } },
-          tipoJornada: 'estandar', diaDescanso: 0,
+          tipoJornada: 'estandar', diasDescanso: [0],
         },
       ],
     });
@@ -71,12 +71,12 @@ describe('validarConfiguracionPeriodo', () => {
         {
           id: 'b1', fechaInicio: '2026-07-06', fechaFin: '2026-07-10',
           horariosPorDia: { 1: { inicio: '08:00', fin: '17:00' } },
-          tipoJornada: 'estandar', diaDescanso: 0,
+          tipoJornada: 'estandar', diasDescanso: [0],
         },
         {
           id: 'b2', fechaInicio: '2026-07-08', fechaFin: '2026-07-12',
           horariosPorDia: { 1: { inicio: '09:00', fin: '18:00' } },
-          tipoJornada: 'estandar', diaDescanso: 0,
+          tipoJornada: 'estandar', diasDescanso: [0],
         },
       ],
     });
@@ -89,7 +89,7 @@ describe('validarConfiguracionPeriodo', () => {
       bloques: [{
         id: 'b1', fechaInicio: '2026-07-01', fechaFin: '2026-07-05',
         horariosPorDia: { 1: { inicio: '08:00', fin: '17:00' } },
-        tipoJornada: 'estandar', diaDescanso: 0,
+        tipoJornada: 'estandar', diasDescanso: [0],
       }],
     });
     const errores = validarConfiguracionPeriodo(config);
