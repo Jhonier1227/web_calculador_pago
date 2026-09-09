@@ -11,11 +11,13 @@ import {
   validarTurno,
   validarJornadaPactada,
   validarAñoFestivos,
+  esHoraNocturna,
+  calcularDuracionEnMinutos,
 } from './utilidades';
-import { clasificarHora, esDiaConRecargoDominical } from './clasificacion';
-import { esHoraNocturna } from './utilidades';
+import { esDiaConRecargoDominical } from './clasificacion';
 
 const LIMITE_LEGAL_DIARIO = 8;
+const LIMITE_SEMANAL_HORAS = 42;
 
 /**
  * Calcula el límite ordinario diario del trabajador.
@@ -31,10 +33,9 @@ function getLimiteDiario(jornadaPactadaHoras: number | null): number {
 }
 
 /**
- * Clasifica cada hora del turno individual.
- * Usa el límite diario (pactado o legal) para determinar si es extra.
+ * Clasifica una porción de hora (ordinaria o extra) según su franja horaria.
  */
-function clasificarHoraTurnoIndividual(
+function clasificarPorcion(
   horaDelDia: number,
   fecha: Date,
   esExtra: boolean,
@@ -47,18 +48,20 @@ function clasificarHoraTurnoIndividual(
     esFestivo(fecha);
 
   if (!esExtra) {
-    // Dentro del límite diario → ordinaria con posibles recargos
     if (esDominicalFestivo && esNocturna) return { tipoHora: TipoHora.ORDINARIA_NOCTURNA_DOMINICAL, recargo: 1.25, esHoraExtra: false };
     if (esDominicalFestivo) return { tipoHora: TipoHora.ORDINARIA_DOMINICAL, recargo: 0.9, esHoraExtra: false };
     if (esNocturna) return { tipoHora: TipoHora.ORDINARIA_NOCTURNA, recargo: 0.35, esHoraExtra: false };
     return { tipoHora: TipoHora.ORDINARIA_DIURNA, recargo: 0, esHoraExtra: false };
   } else {
-    // Superó el límite diario → hora extra
     if (esDominicalFestivo && esNocturna) return { tipoHora: TipoHora.EXTRA_NOCTURNA_DOMINICAL, recargo: 1.65, esHoraExtra: true };
     if (esDominicalFestivo) return { tipoHora: TipoHora.EXTRA_DIURNA_DOMINICAL, recargo: 1.15, esHoraExtra: true };
     if (esNocturna) return { tipoHora: TipoHora.EXTRA_NOCTURNA, recargo: 0.75, esHoraExtra: true };
     return { tipoHora: TipoHora.EXTRA_DIURNA, recargo: 0.25, esHoraExtra: true };
   }
+}
+
+function addMinutos(fecha: Date, minutos: number): Date {
+  return new Date(fecha.getTime() + minutos * 60 * 1000);
 }
 
 export function calcularTurno(
@@ -110,6 +113,29 @@ export function calcularTurno(
     };
   }
 
+  // Validar que el descanso no sea igual o mayor a la duración bruta del turno
+  const minutosBrutosTurno = turno.franjas.reduce((sum, f) => sum + calcularDuracionEnMinutos(f.inicio, f.fin, 0), 0);
+  if ((minutosDescanso ?? 0) > 0 && (minutosDescanso ?? 0) >= minutosBrutosTurno) {
+    advertencias.push({
+      codigo: 'DESCANSO_EXCEDE_TURNO',
+      mensaje: `El tiempo de descanso (${minutosDescanso} min) no puede ser igual o mayor al total del turno (${minutosBrutosTurno} min).`,
+      severidad: 'error',
+    });
+    return {
+      desgloseHoras: [],
+      resumenPorTipo: [],
+      totalRecargos: 0,
+      horasOrdinarias: 0,
+      horasExtra: 0,
+      horasNocturnas: 0,
+      horasDominicalesFestivas: 0,
+      auxilioTransporte: auxilioTransporte ?? 0,
+      totalReferencial: auxilioTransporte ?? 0,
+      totalPagar: auxilioTransporte ?? 0,
+      advertencias,
+    };
+  }
+
   const anoErrores = validarAñoFestivos(turno.fecha.getFullYear());
   advertencias.push(...anoErrores);
   if (anoErrores.some((a) => a.severidad === 'error')) {
@@ -144,114 +170,120 @@ export function calcularTurno(
     ? diasDescanso
     : [];
 
-  // Calcular límite diario para modo Turno Individual (cuando no hay acumulador semanal)
   const esModoTurnoIndividual = horasAcumuladasLV === undefined;
 
-  let acumuladorSemana = horasAcumuladasLV ?? 0;
-  let minutosAcumuladosTurno = 0; // minutos efectivos trabajados en este turno
-
-  for (const intervalo of intervalos) {
-    const esNocturna = esHoraNocturna(intervalo.horaCalendar);
-    const esFestivoReal = esFestivo(intervalo.horaInicio) || esDiaConRecargoDominical(intervalo.horaInicio, diasDescansoArray, tipoJornada ?? 'estandar');
-
-    // Calcular minutos efectivos ya trabajados ANTES de este intervalo
-    const minutosAntesDeIntervalo = minutosAcumuladosTurno;
-
-    let clasificacion;
-
-    if (esModoTurnoIndividual) {
-      // Modo Turno Individual: usar límite diario en minutos
-      const limiteDiarioMin = getLimiteDiario(horasPactadasDiarias ?? null) * 60;
-
-      // Determinar si este intervalo (o parte de él) es extra
-      // Si todo el intervalo está dentro del límite → ordinario
-      // Si todo está fuera → extra
-      // Si cruza el límite → dividir (pero para simplicidad, clasificamos por el punto medio)
-      const puntoMedioMin = minutosAntesDeIntervalo + intervalo.minutos / 2;
-      const esExtra = puntoMedioMin > limiteDiarioMin;
-
-      clasificacion = clasificarHoraTurnoIndividual(
-        intervalo.horaCalendar,
-        intervalo.horaInicio,
-        esExtra,
-        diasDescansoArray,
-        tipoJornada ?? 'estandar'
-      );
-    } else {
-      // Modo Período: usar acumulador semanal de 42h (en HORAS)
-      const limiteSemanalHoras = 42;
-      const puntoMedioHoras = acumuladorSemana + (intervalo.minutos / 2) / 60;
-      const esExtra = puntoMedioHoras > limiteSemanalHoras;
-
-      // Usar la función de clasificación original para modo período
-      clasificacion = clasificarHora(
-        intervalo.horaCalendar,
-        intervalo.horaInicio,
-        acumuladorSemana, // ya está en horas
-        diasDescansoArray,
-        tipoJornada ?? 'estandar'
-      );
-      // Sobrescribir esHoraExtra según nuestro cálculo en horas
-      clasificacion = { ...clasificacion, esHoraExtra: esExtra };
-      acumuladorSemana += intervalo.minutos / 60; // acumular en horas
-    }
-
-    // Calcular valor proporcional a los minutos del intervalo
-    const proporcionMinutos = intervalo.minutos / 60; // fracción de hora
-    const valorHoraBase = clasificacion.esHoraExtra
-      ? valorHoraOrd * (1 + clasificacion.recargo)
-      : valorHoraOrd * clasificacion.recargo;
-    const valorIntervalo = redondearCOP(valorHoraBase * proporcionMinutos);
-
-    desgloseHoras.push({
-      horaInicio: intervalo.horaInicio,
-      horaFin: intervalo.horaFin,
-      tipoHora: clasificacion.tipoHora,
-      esFestivo: esFestivoReal,
-      esNocturna: esNocturna,
-      dentroDeJornada: !clasificacion.esHoraExtra,
-      valorHora: valorIntervalo,
-      recargoAplicado: clasificacion.recargo,
-      esHoraExtra: clasificacion.esHoraExtra,
-    });
-
-    minutosAcumuladosTurno += intervalo.minutos;
-  }
-
-  const extrasCount = desgloseHoras.filter((h) => h.esHoraExtra).length;
-  if (extrasCount > LEGAL_LIMITS.MAX_HORAS_EXTRA_DIARIAS) {
-    advertencias.push({
-      codigo: 'HORAS_EXTRA_DIARIA_EXCEDIDA',
-      mensaje: `El turno tiene ${extrasCount} horas extra, superando el límite legal de ${LEGAL_LIMITS.MAX_HORAS_EXTRA_DIARIAS} horas extra por día.`,
-      severidad: 'warning',
-    });
-  }
-
-  const agrupado = new Map<TipoHora, { cantidadHoras: number; valorTotal: number; recargos: number[] }>();
+  // Acumulador semanal en minutos (para precisión decimal)
+  const acumuladorSemanaMin = (horasAcumuladasLV ?? 0) * 60;
+  let minutosAcumuladosTurno = 0;
 
   let horasOrdinarias = 0;
   let horasExtra = 0;
   let horasNocturnas = 0;
   let horasDominicalesFestivas = 0;
 
-  for (const h of desgloseHoras) {
-    const key = h.tipoHora;
-    const grupo = agrupado.get(key);
+  const agrupado = new Map<TipoHora, { cantidadHoras: number; valorTotal: number; recargos: number[] }>();
+
+  const registrar = (
+    tipoHora: TipoHora,
+    recargo: number,
+    valor: number,
+    horas: number,
+    esNocturna: boolean,
+    esFestivo: boolean,
+  ) => {
+    const grupo = agrupado.get(tipoHora);
     if (grupo) {
-      grupo.cantidadHoras++;
-      grupo.valorTotal += h.valorHora;
-      grupo.recargos.push(h.recargoAplicado);
+      grupo.cantidadHoras += horas;
+      grupo.valorTotal += valor;
+      grupo.recargos.push(recargo);
     } else {
-      agrupado.set(key, { cantidadHoras: 1, valorTotal: h.valorHora, recargos: [h.recargoAplicado] });
+      agrupado.set(tipoHora, { cantidadHoras: horas, valorTotal: valor, recargos: [recargo] });
+    }
+    if (esNocturna) horasNocturnas += horas;
+    if (esFestivo) horasDominicalesFestivas += horas;
+  };
+
+  for (const intervalo of intervalos) {
+    const esNocturna = esHoraNocturna(intervalo.horaCalendar);
+    const esFestivoReal = esFestivo(intervalo.horaInicio) || esDiaConRecargoDominical(intervalo.horaInicio, diasDescansoArray, tipoJornada ?? 'estandar');
+
+    const inicioTurnoMin = minutosAcumuladosTurno;
+    const finTurnoMin = minutosAcumuladosTurno + intervalo.minutos;
+
+    let minutosOrd = 0;
+    let minutosExtra = 0;
+
+    if (esModoTurnoIndividual) {
+      const limiteDiarioMin = getLimiteDiario(horasPactadasDiarias ?? null) * 60;
+      if (finTurnoMin <= limiteDiarioMin) {
+        minutosOrd = intervalo.minutos;
+      } else if (inicioTurnoMin >= limiteDiarioMin) {
+        minutosExtra = intervalo.minutos;
+      } else {
+        minutosOrd = limiteDiarioMin - inicioTurnoMin;
+        minutosExtra = finTurnoMin - limiteDiarioMin;
+      }
+    } else {
+      const limiteSemanalMin = LIMITE_SEMANAL_HORAS * 60;
+      const inicioGlobalMin = acumuladorSemanaMin + minutosAcumuladosTurno;
+      const finGlobalMin = inicioGlobalMin + intervalo.minutos;
+      if (finGlobalMin <= limiteSemanalMin) {
+        minutosOrd = intervalo.minutos;
+      } else if (inicioGlobalMin >= limiteSemanalMin) {
+        minutosExtra = intervalo.minutos;
+      } else {
+        minutosOrd = limiteSemanalMin - inicioGlobalMin;
+        minutosExtra = finGlobalMin - limiteSemanalMin;
+      }
     }
 
-    if (h.esHoraExtra) {
-      horasExtra++;
-    } else {
-      horasOrdinarias++;
+    if (minutosOrd > 0) {
+      const clas = clasificarPorcion(intervalo.horaCalendar, intervalo.horaInicio, false, diasDescansoArray, tipoJornada ?? 'estandar');
+      const horas = minutosOrd / 60;
+      const valor = redondearCOP(valorHoraOrd * clas.recargo * horas);
+      desgloseHoras.push({
+        horaInicio: intervalo.horaInicio,
+        horaFin: addMinutos(intervalo.horaInicio, minutosOrd),
+        tipoHora: clas.tipoHora,
+        esFestivo: esFestivoReal,
+        esNocturna,
+        dentroDeJornada: true,
+        valorHora: valor,
+        recargoAplicado: clas.recargo,
+        esHoraExtra: false,
+      });
+      horasOrdinarias += horas;
+      registrar(clas.tipoHora, clas.recargo, valor, horas, esNocturna, esFestivoReal);
     }
-    if (h.esNocturna) horasNocturnas++;
-    if (h.esFestivo) horasDominicalesFestivas++;
+
+    if (minutosExtra > 0) {
+      const clas = clasificarPorcion(intervalo.horaCalendar, intervalo.horaInicio, true, diasDescansoArray, tipoJornada ?? 'estandar');
+      const horas = minutosExtra / 60;
+      const valor = redondearCOP(valorHoraOrd * (1 + clas.recargo) * horas);
+      desgloseHoras.push({
+        horaInicio: addMinutos(intervalo.horaInicio, minutosOrd),
+        horaFin: intervalo.horaFin,
+        tipoHora: clas.tipoHora,
+        esFestivo: esFestivoReal,
+        esNocturna,
+        dentroDeJornada: false,
+        valorHora: valor,
+        recargoAplicado: clas.recargo,
+        esHoraExtra: true,
+      });
+      horasExtra += horas;
+      registrar(clas.tipoHora, clas.recargo, valor, horas, esNocturna, esFestivoReal);
+    }
+
+    minutosAcumuladosTurno += intervalo.minutos;
+  }
+
+  if (horasExtra > LEGAL_LIMITS.MAX_HORAS_EXTRA_DIARIAS) {
+    advertencias.push({
+      codigo: 'HORAS_EXTRA_DIARIA_EXCEDIDA',
+      mensaje: `El turno tiene ${horasExtra} horas extra, superando el límite legal de ${LEGAL_LIMITS.MAX_HORAS_EXTRA_DIARIAS} horas extra por día.`,
+      severidad: 'warning',
+    });
   }
 
   const resumenPorTipo: ResumenTipo[] = [];
@@ -264,6 +296,8 @@ export function calcularTurno(
       recargoPromedio: Math.round(recargoPromedio * 100) / 100,
     });
   }
+
+  resumenPorTipo.sort((a, b) => a.tipoHora.localeCompare(b.tipoHora));
 
   const totalRecargos = desgloseHoras.reduce((sum, h) => sum + h.valorHora, 0);
   const auxilio = auxilioTransporte ?? 0;

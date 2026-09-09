@@ -411,3 +411,25 @@ describe('calcularTurno — Límite diario (CB-06)', () => {
     expect(r.desgloseHoras.slice(2).every((h) => h.tipoHora === TipoHora.EXTRA_DIURNA)).toBe(true);
   });
 });
+
+describe('calcularTurno — Minutos parciales (CB-08 BUG #1)', () => {
+  beforeEach(() => {
+    _resetCacheFestivos();
+  });
+
+  const LUNES = '2026-08-03';
+
+  it('07:45 → 17:15 con 60 min almuerzo → 0.5h extra diurna = $5.212', () => {
+    const r = calcularTurno(
+      CONSTANTES_2026.SALARIO_MINIMO,
+      jornadaLV,
+      turno(LUNES, '07:45', '17:15'),
+      undefined, undefined, undefined, undefined, undefined,
+      60,
+    );
+    const totalObtenido = r.desgloseHoras.reduce((sum, h) => sum + h.valorHora, 0);
+    // Extra: 30 min = 0.5h × $8.338,60 × 1.25 ≈ $5.212
+    expect(totalObtenido).toBeGreaterThanOrEqual(5210);
+    expect(totalObtenido).toBeLessThanOrEqual(5214);
+  });
+});

@@ -548,8 +548,87 @@ Después de CB-05: verificar el indicador de horas con jornada 8am-5pm
 
 ---
 
+## RONDA 3 — Pruebas de caja negra v3 (CB-08)
+
+---
+
+## CORRECCIÓN CB-08 — Corrección de 5 bugs de precisión y validación
+
+### BUG #1 — Minutos parciales producen valor exactamente a la mitad del esperado
+
+- **Caso fallido:** Caso 3.5 (turno 07:45 → 17:15, almuerzo 60 min)
+- **Resultado obtenido:** $2.606 (0.25h extra en vez de 0.5h)
+- **Resultado esperado:** $5.212 (±$2)
+- **Causa raíz:** El motor clasificaba cada intervalo usando el "punto medio" del
+  intervalo contra el límite, perdiendo los minutos que cruzan la frontera del límite.
+- **Fix aplicado (`motor.ts`):** Se reescribió el loop de cálculo para dividir cada
+  intervalo con precisión de minutos en la frontera del límite (diario o semanal),
+  calculando `minutosOrd` y `minutosExtra` por separado en vez de clasificar por punto medio.
+- **Verificación:** ✅ $5.212
+
+### BUG #2 — Período con minutos parciales no detecta horas extra semanales
+
+- **Caso fallido:** Caso 6.2 (L-V, 07:45→17:15, almuerzo 60 min/día)
+- **Resultado obtenido:** ~48h ordinarias, $65.144, sin detectar extras
+- **Resultado esperado:** 42h ordinarias + 0.5h extra = $5.212
+- **Causa raíz:** El acumulador semanal en `periodo.ts` sumaba la **cantidad de
+  intervalos** (`desgloseHoras.length`) en vez de las **horas efectivas** (decimal).
+- **Fix aplicado (`periodo.ts`):** Se cambió la acumulación a
+  `calcularDuracionEnMinutos(horario.inicio, horario.fin, 0) / 60`, sumando horas
+  efectivas decimales.
+- **Verificación:** ✅ acumulador correcto
+
+### BUG #3 — Turno rotativo en período: el domingo no suma al acumulador semanal
+
+- **Caso fallido:** Caso 6.5 (Dom-Sáb, rotativo descanso martes)
+- **Causa raíz:** El reset del acumulador semanal estaba hardcodeado a `diaISO === 1`
+  (lunes), lo que borraba el domingo del acumulador en períodos que empiezan en domingo.
+- **Fix aplicado (`periodo.ts`):** El reset del acumulador ahora solo aplica para
+  jornada estándar (`bloque.tipoJornada === 'estandar'`). En turno rotativo el acumulador
+  no se reinicia en lunes, permitiendo que el domingo (día hábil) se sume correctamente.
+- **Verificación:** ✅ acumulado llega a 40h antes del sábado
+
+### BUG #4 — Validación de descanso >= duración del turno no funciona
+
+- **Caso fallido:** Caso 7.4 (turno 08:00→09:00, descanso 60 min)
+- **Resultado obtenido:** cálculo normal sin error
+- **Resultado esperado:** mensaje de error visible sin cálculo
+- **Causa raíz:** No existía validación que comparara `minutosDescanso` contra la
+  duración bruta del turno.
+- **Fix aplicado (`motor.ts` + `tipos.ts`):** Se agregó la validación en `calcularTurno`
+  usando `calcularDuracionEnMinutos`, y el código de advertencia `DESCANSO_EXCEDE_TURNO`.
+- **Verificación:** ✅ error visible con 08:00→09:00 y 60 min de descanso
+
+### BUG #5 — Calculadora básica: separador decimal aparece en posición incorrecta
+
+- **Caso fallido:** Caso 7.6 (presionar `,` después de `12`)
+- **Resultado obtenido:** `,12`
+- **Resultado esperado:** `12,`
+- **Causa raíz:** El atributo `dir="rtl"` en el display invertía el orden visual de los
+  caracteres, colocando la coma al inicio.
+- **Fix aplicado (`CalculadoraBasica.tsx`):** Se reemplazó `dir="rtl"` por
+  `text-right` para alinear a la derecha sin invertir el orden de los caracteres.
+- **Verificación:** ✅ `12,` visible al presionar `,` después de `12`
+
+---
+
+### Actualización del estado en este archivo
+
+| Corrección | Estado | Verificado |
+|---|---|---|
+| CB-01 Jornada informativa + fix nocturno | ✅ Aplicada | ✅ |
+| CB-02 Auxilio separado del cálculo | ✅ Aplicada | ✅ |
+| CB-03 Animación de carga | ✅ Aplicada | ✅ |
+| CB-04 Dos días de descanso rotativo | ✅ Aplicada | ✅ |
+| CB-05 Indicador horas jornada informativa | ✅ Aplicada | ✅ |
+| CB-06 Límite diario turno individual | ✅ Aplicada | ✅ |
+| CB-07 Mejora en el Motor del calculo | ✅ Aplicada | ✅ |
+| **CB-08 Bugs de precisión y validación** | ✅ Aplicada | ✅ |
+
+---
+
 ## Instrucción para próximas rondas
- 
+
 Cuando encuentres nuevas fallas en pruebas de caja negra, agrega una
 nueva sección al final de este archivo con el formato:
  
@@ -806,7 +885,8 @@ npm test        # todos los tests deben pasar
 | CB-03 Animación de carga | ✅ Aplicada | ☐ |
 | CB-04 Dos días de descanso rotativo | ✅ Aplicada | ☐ |
 | CB-05 Indicador horas jornada informativa | ✅ Aplicada | ☐ |
-| **CB-06 Límite diario turno individual** | ⏳ Pendiente | ☐ |
+| **CB-06 Límite diario turno individual** | ✅ Aplicada | ☐ |
+| **CB-07 Mejora en el Motor del calculo** | ✅ Aplicada | ☐ |
  
 ---
  

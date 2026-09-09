@@ -118,7 +118,10 @@ export type CodigosAdvertencia =
   | 'AUXILIO_PRORRATEADO'
   | 'ADR_OPCIONALIDAD_FRANJAS'
   | 'LUZ_FRANJAS_MULTIPLES'
-  | 'FRANJA_INVALIDA';
+  | 'FRANJA_INVALIDA'
+  | 'DESCANSO_EXCEDE_TURNO'
+  | 'SIN_FRANJAS'
+  | 'DEMASIADAS_FRANJAS';
 
 export interface BloqueHorario {
   id: string;

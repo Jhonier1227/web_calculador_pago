@@ -1,5 +1,5 @@
 import type { ConfiguracionPeriodo, ResultadoPeriodo, JornadaPactada, Turno, ResumenTipo, Advertencia, TipoHora, DetalleDominicalFestivo, MotivoRecargoDominical } from './tipos';
-import { validarJornadaPactada, validarAñoFestivos, diaSemanaJSaISO } from './utilidades';
+import { validarJornadaPactada, validarAñoFestivos, diaSemanaJSaISO, calcularDuracionEnMinutos } from './utilidades';
 import { calcularTurno } from './motor';
 import { nombreFestivo, esFestivo } from './festivos';
 import { LEGAL_LIMITS } from './constantes';
@@ -164,7 +164,7 @@ export function calcularPeriodo(
 
     const diaISO = diaSemanaJSaISO(current.getDay());
 
-    if (diaISO === 1) {
+    if (diaISO === 1 && bloque.tipoJornada === 'estandar') {
       acumuladorLV = 0;
     }
 
@@ -244,7 +244,8 @@ export function calcularPeriodo(
       }
     }
 
-    acumuladorLV += resultado.desgloseHoras.length;
+    const minutosEfectivosDia = calcularDuracionEnMinutos(horario.inicio, horario.fin, 0);
+    acumuladorLV += minutosEfectivosDia / 60;
 
     diasCalculados++;
     current.setDate(current.getDate() + 1);
