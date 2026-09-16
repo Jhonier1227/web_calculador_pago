@@ -3,8 +3,7 @@ import { SunIcon, MoonIcon, ClockIcon, CalendarIcon, CalculatorIcon } from './ui
 import { NavBar } from './NavBar';
 import { UpdatePrompt } from './ui/UpdatePrompt';
 import { HojasIzquierda, HojasDerecha, MacetaIzquierda, MacetaDerecha } from './decoracion';
-
-type Seccion = 'turno' | 'periodo' | 'calculadora';
+import type { Seccion } from '../hooks/useNavigation';
 
 interface LayoutProps {
   children: ReactNode;
@@ -91,6 +90,25 @@ export function Layout({ children, theme, onToggleTheme, seccionActiva, onCambia
                 Esta herramienta no constituye asesoría legal. Verifica con tu
                 empleador o un contador.
               </p>
+              <div className="mt-4 flex justify-center gap-4 text-xs text-slate-500 pb-2">
+                <button
+                  type="button"
+                  onClick={() => onCambiarSeccion('terminos')}
+                  className="hover:text-emerald-400 transition-colors"
+                >
+                  Términos y condiciones
+                </button>
+                <span aria-hidden="true">·</span>
+                <button
+                  type="button"
+                  onClick={() => onCambiarSeccion('privacidad')}
+                  className="hover:text-emerald-400 transition-colors"
+                >
+                  Política de privacidad
+                </button>
+                <span aria-hidden="true">·</span>
+                <span>© 2026 SoftwareJM</span>
+              </div>
             </footer>
           </div>
 

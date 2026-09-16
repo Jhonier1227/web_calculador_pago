@@ -13,6 +13,9 @@ import { NotaLimitaciones } from './components/Calculadora/NotaLimitaciones';
 import { ResultadoPeriodo } from './components/Calculadora/ResultadoPeriodo';
 import { CalculadoraBasica } from './components/Calculadora/CalculadoraBasica';
 import { SeccionEducativa } from './components/SeccionEducativa';
+import { Privacidad } from './pages/Privacidad';
+import { Terminos } from './pages/Terminos';
+import { BannerCookies } from './components/legal/BannerCookies';
 import { useTheme } from './hooks/useTheme';
 import { useNavigation } from './hooks/useNavigation';
 import { useJornadaState } from './hooks/useJornadaState';
@@ -21,7 +24,17 @@ import { trackEvent } from './lib/analytics';
 
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
-  const { seccionActiva, direccionSlide, animando, cambiarSeccion } = useNavigation();
+  const { seccionActiva, direccionSlide, animando, cambiarSeccion, volverAAnterior } = useNavigation();
+
+  const handleAceptarCookies = () => {
+    localStorage.setItem('cookieConsent', 'accepted');
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'consent_accepted' });
+  };
+
+  const handleRechazarCookies = () => {
+    localStorage.setItem('cookieConsent', 'rejected');
+  };
 
   const jornadaState = useJornadaState();
   const {
@@ -239,10 +252,19 @@ export default function App() {
                 <CalculadoraBasica />
               </section>
             )}
+
+            {seccionActiva === 'privacidad' && (
+              <Privacidad onVolver={volverAAnterior} />
+            )}
+
+            {seccionActiva === 'terminos' && (
+              <Terminos onVolver={volverAAnterior} />
+            )}
           </div>
         </div>
 
         <SeccionEducativa />
+        <BannerCookies onAceptar={handleAceptarCookies} onRechazar={handleRechazarCookies} onCambiarSeccion={cambiarSeccion} />
       </Layout>
     </ErrorBoundary>
   );

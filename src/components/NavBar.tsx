@@ -1,6 +1,5 @@
 import { ClockIcon, CalendarIcon, CalculatorIcon } from './ui/Icons';
-
-type Seccion = 'turno' | 'periodo' | 'calculadora';
+import type { Seccion } from '../hooks/useNavigation';
 
 interface NavBarProps {
   activa: Seccion;
